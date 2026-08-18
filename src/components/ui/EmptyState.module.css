@@ -1,0 +1,30 @@
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px;
+  color: var(--color-text-secondary);
+  font-family: 'Inter', sans-serif;
+}
+
+.title {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+  color: var(--color-text-primary);
+}
+
+.description {
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+}
+
+.action {
+  margin-top: 24px;
+}

@@ -1,0 +1,176 @@
+/* Hirely theme — monochrome & amber
+   Drop this into your global stylesheet (e.g. index.css) and reference
+   the variables from your components or Tailwind config. */
+
+:root {
+  /* Surfaces */
+  --color-bg: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-muted: #F7F7F5;
+  --color-border: #E5E5E5;
+  --color-border-strong: #D4D4D1;
+
+  /* Text */
+  --color-text-primary: #111111;
+  --color-text-secondary: #6B6B68;
+  --color-text-muted: #9C9C98;
+  --color-text-inverse: #FFFFFF;
+
+  /* Brand accent — amber. Use ONLY for primary CTAs, active states,
+     and the one highlight per screen that should draw the eye. */
+  --color-accent: #D97706;
+  --color-accent-hover: #B45F04;
+  --color-accent-subtle: #FDECD1;
+  --color-accent-subtle-text: #8A5A12;
+
+  /* Status — for application states, alerts, form validation */
+  --color-success: #15803D;
+  --color-success-subtle: #DCFCE7;
+  --color-danger: #B91C1C;
+  --color-danger-subtle: #FEE2E2;
+  --color-warning: #B45309;
+  --color-warning-subtle: #FEF3C7;
+
+  /* Radius + shadow, so cards match the mockup */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04);
+
+  /* Spacing Scale */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+
+  /* Fonts */
+  --font-heading: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Optional dark mode — same structure, inverted lightness */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0B0B0A;
+    --color-surface: #161615;
+    --color-surface-muted: #1E1E1C;
+    --color-border: #2A2A28;
+    --color-border-strong: #3A3A37;
+
+    --color-text-primary: #F5F5F3;
+    --color-text-secondary: #B5B5B0;
+    --color-text-muted: #7A7A76;
+    --color-text-inverse: #111111;
+
+    --color-accent: #E89A3C;
+    --color-accent-hover: #F0AD5C;
+    --color-accent-subtle: #3A2A12;
+    --color-accent-subtle-text: #F0AD5C;
+
+    --color-success-subtle: #103820;
+    --color-danger-subtle: #3A1414;
+    --color-warning-subtle: #3A2A08;
+  }
+}
+
+/* ── Reset & Global Styles ── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+}
+
+h1, h2 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+h3 {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Focus visible for keyboard nav */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 3px;
+}
+
+/* Utility: visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

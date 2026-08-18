@@ -1,0 +1,24 @@
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.required {
+  color: var(--color-danger);
+  margin-left: 4px;
+}
+
+.error {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--color-danger);
+  margin-top: 4px;
+}
