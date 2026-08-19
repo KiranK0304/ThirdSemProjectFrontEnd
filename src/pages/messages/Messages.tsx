@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import {
   useSeekerApprovedConversations,
@@ -34,6 +35,7 @@ import styles from './Messages.module.css';
 
 export default function Messages() {
   const { user } = useAuth();
+  const location = useLocation();
   const isSeeker = user?.account_type === 'SEEKER';
 
   // Tabs
@@ -42,8 +44,9 @@ export default function Messages() {
   const [messageText, setMessageText] = useState('');
 
   // New Request Modal state (Seeker)
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEmployerId, setSelectedEmployerId] = useState<string>('');
+  const initialEmployerId = location.state?.employerId?.toString() || '';
+  const [isModalOpen, setIsModalOpen] = useState(!!initialEmployerId);
+  const [selectedEmployerId, setSelectedEmployerId] = useState<string>(initialEmployerId);
   const [introMessage, setIntroMessage] = useState('');
 
   // Seeker Queries

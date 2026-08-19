@@ -101,9 +101,19 @@ export default function JobDetail() {
       
       <div className={styles.footer}>
         <span className={styles.postedDate}>Posted {formatRelativeTime(job.created_at)}</span>
-        <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
-          Apply Now
-        </Button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          {user?.account_type === 'SEEKER' && job.employer?.id && (
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
+            >
+              Message Employer
+            </Button>
+          )}
+          <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+            Apply Now
+          </Button>
+        </div>
       </div>
 
       <Modal 
