@@ -40,21 +40,29 @@ export default function Login() {
             type="email" 
             required 
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setError(null)
+            }}
           />
           <Input 
             label="Password" 
             type="password" 
             required 
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              setError(null)
+            }}
           />
+
+          <div className={styles.errorSlot} aria-live="polite">
+            {error && <div className={styles.error} role="alert">{error}</div>}
+          </div>
           
           <Button variant="primary" type="submit" loading={isSubmitting} disabled={isSubmitting}>
             Sign in
           </Button>
-          
-          {error && <div className={styles.error}>{error}</div>}
         </form>
         
         <div className={styles.footer}>
