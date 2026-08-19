@@ -17,7 +17,7 @@ export const clearTokens = () => {
 };
 
 export const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || '',
 });
 
 api.interceptors.request.use(
@@ -41,7 +41,8 @@ api.interceptors.response.use(
       
       if (refresh) {
         try {
-          const response = await axios.post('/api/auth/refresh/', { refresh });
+          const baseURL = import.meta.env.VITE_API_URL || '';
+          const response = await axios.post(`${baseURL}/api/auth/refresh/`, { refresh });
           accessToken = response.data.access;
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
