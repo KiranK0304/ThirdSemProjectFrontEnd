@@ -122,3 +122,13 @@ export interface ApiError {
   detail?: string
   [key: string]: unknown
 }
+
+export interface Notification {
+  id: number
+  notification_type: string
+  title: string
+  message: string
+  related_url: string
+  is_read: boolean
+  created_at: string
+}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications, useUnreadNotificationCount } from '@/hooks/queries/useNotificationQueries'
 import { Button, Avatar } from '@/components/ui'
 import styles from './Layout.module.css'
 
@@ -14,6 +15,11 @@ export function AppLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const { data: notifications = [] } = useNotifications(!!user)
+  const { data: unreadCount = 0 } = useUnreadNotificationCount(!!user)
+  const markRead = useMarkNotificationRead()
+  const markAllRead = useMarkAllNotificationsRead()
 
   const handleLogout = async () => {
     await logout()
@@ -26,6 +32,12 @@ export function AppLayout() {
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false)
+  }
+
+  const handleNotificationClick = (id: number, relatedUrl: string) => {
+    markRead.mutate(id)
+    setNotificationsOpen(false)
+    if (relatedUrl) navigate(relatedUrl)
   }
 
   const getInitials = (name?: string, email?: string) => {
@@ -126,10 +138,40 @@ export function AppLayout() {
             )}
             {user && (
               <>
-                <button className={styles.notificationBtn}>
+                <button
+                  className={styles.notificationBtn}
+                  onClick={() => setNotificationsOpen((open) => !open)}
+                  aria-label="Notifications"
+                >
                   <FiBell size={20} />
-                  <span className={styles.notificationBadge}></span>
+                  {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
                 </button>
+                {notificationsOpen && (
+                  <div className={styles.notificationPanel}>
+                    <div className={styles.notificationHeader}>
+                      <strong>Notifications</strong>
+                      {unreadCount > 0 && (
+                        <button className={styles.markAllButton} onClick={() => markAllRead.mutate()}>
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <p className={styles.emptyNotifications}>No notifications yet.</p>
+                    ) : (
+                      notifications.slice(0, 8).map((notification) => (
+                        <button
+                          key={notification.id}
+                          className={`${styles.notificationItem} ${!notification.is_read ? styles.unreadNotification : ''}`}
+                          onClick={() => handleNotificationClick(notification.id, notification.related_url)}
+                        >
+                          <strong>{notification.title}</strong>
+                          <span>{notification.message}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
                 <div className={styles.headerAvatar}>
                   <Avatar 
                     name={user.name || user.email || 'User'} 
