@@ -14,6 +14,8 @@ import SeekerDashboard from '@/pages/seeker/Dashboard'
 import SeekerApplications from '@/pages/seeker/Applications'
 import SeekerApplicationDetail from '@/pages/seeker/ApplicationDetail'
 import SeekerProfile from '@/pages/seeker/Profile'
+import SavedJobs from '@/pages/seeker/SavedJobs'
+import JobAlerts from '@/pages/seeker/JobAlerts'
 import EmployerDashboard from '@/pages/employer/Dashboard'
 import EmployerJobs from '@/pages/employer/Jobs'
 import EmployerJobForm from '@/pages/employer/JobForm'
@@ -76,6 +78,22 @@ function App() {
           element={
             <RequireAuth role="SEEKER">
               <SeekerProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/seeker/saved-jobs"
+          element={
+            <RequireAuth role="SEEKER">
+              <SavedJobs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/seeker/job-alerts"
+          element={
+            <RequireAuth role="SEEKER">
+              <JobAlerts />
             </RequireAuth>
           }
         />

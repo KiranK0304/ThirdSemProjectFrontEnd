@@ -1,0 +1,100 @@
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.heading {
+  margin-bottom: 24px;
+}
+
+.heading h1,
+.formCard h2,
+.alertsSection h2,
+.alertHeader h2 {
+  color: var(--color-text-primary);
+}
+
+.heading h1,
+.formCard h2,
+.alertsSection h2 {
+  margin: 0 0 8px;
+}
+
+.heading p,
+.alertHeader p,
+.alertFooter span {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.formCard {
+  margin-bottom: 32px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.submitArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.alertCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.alertHeader,
+.alertFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.alertHeader h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.alertFooter {
+  align-items: center;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .alertHeader,
+  .alertFooter {
+    flex-direction: column;
+  }
+}

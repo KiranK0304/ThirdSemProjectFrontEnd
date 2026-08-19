@@ -7,7 +7,7 @@ import styles from './Layout.module.css'
 import { 
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
   FiUser, FiBriefcase, FiEdit, FiSettings, 
-  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell 
+  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell, FiBookmark
 } from 'react-icons/fi'
 
 export function AppLayout() {
@@ -38,6 +38,8 @@ export function AppLayout() {
     ...(user?.account_type === 'SEEKER' ? [
       { to: '/seeker/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
+      { to: '/seeker/saved-jobs', label: 'Saved Jobs', icon: <FiBookmark /> },
+      { to: '/seeker/job-alerts', label: 'Job Alerts', icon: <FiBell /> },
       { to: '/seeker/applications', label: 'My Applications', icon: <FiFileText /> },
       { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
       { to: '/seeker/profile', label: 'Profile', icon: <FiUser /> },

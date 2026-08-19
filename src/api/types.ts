@@ -83,6 +83,36 @@ export interface Job {
   updated_at: string
 }
 
+export interface SavedJob {
+  id: number
+  job: Job
+  created_at: string
+}
+
+export type AlertFrequency = 'DAILY' | 'WEEKLY'
+
+export interface JobAlert {
+  id: number
+  keyword: string
+  location: string
+  employment_type: string
+  minimum_salary: string | null
+  frequency: AlertFrequency
+  is_active: boolean
+  last_sent_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface JobAlertInput {
+  keyword?: string
+  location?: string
+  employment_type?: string
+  minimum_salary?: number
+  frequency?: AlertFrequency
+  is_active?: boolean
+}
+
 export interface ApplicationSeeker {
   id: number
   user_email: string

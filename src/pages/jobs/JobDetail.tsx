@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useJob } from '@/hooks/queries/useJobQueries'
 import { useApplyToJob } from '@/hooks/queries/useApplicationQueries'
 import { useResumes } from '@/hooks/queries/useResumeQueries'
+import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { extractApiError } from '@/api/utils'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
 import { formatEmploymentType } from '@/utils/format'
@@ -101,9 +102,12 @@ export default function JobDetail() {
       
       <div className={styles.footer}>
         <span className={styles.postedDate}>Posted {formatRelativeTime(job.created_at)}</span>
-        <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
-          Apply Now
-        </Button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <SaveJobButton jobId={job.id} />
+          <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+            Apply Now
+          </Button>
+        </div>
       </div>
 
       <Modal 

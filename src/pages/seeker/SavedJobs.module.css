@@ -1,0 +1,62 @@
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.heading {
+  margin-bottom: 24px;
+}
+
+.heading h1 {
+  margin: 0 0 8px;
+  color: var(--color-text-primary);
+}
+
+.heading p,
+.cardHeader p,
+.meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jobCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.cardHeader h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: var(--color-text-primary);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta {
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+}
