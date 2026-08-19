@@ -45,8 +45,7 @@ export function GuestOnly({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
-    const redirect = user.account_type === 'EMPLOYER' ? '/employer/dashboard' : '/seeker/dashboard'
-    return <Navigate to={redirect} replace />
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>
