@@ -1,4 +1,4 @@
-export interface EmployerProfile {
+﻿export interface EmployerProfile {
   id: number
   company_name: string
   website: string
@@ -116,6 +116,59 @@ export interface EmployerJobFilters {
   status?: string
   search?: string
   ordering?: string
+}
+
+export type ChatRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export interface ChatEmployer {
+  id: number
+  user_id: number
+  user_email: string
+  user_name: string
+  company_name: string
+  website: string
+  description: string
+  verification_status: 'PENDING' | 'APPROVED' | 'REJECTED'
+}
+
+export interface ChatSeeker {
+  id: number
+  user_id: number
+  user_email: string
+  user_name: string
+  phone: string
+  bio: string
+}
+
+export interface ChatMessage {
+  id: number
+  chat_request: number
+  sender_id: number
+  sender_email: string
+  sender_name: string
+  content: string
+  is_read: boolean
+  is_from_me: boolean
+  created_at: string
+}
+
+export interface ChatRequest {
+  id: number
+  seeker: ChatSeeker
+  employer: ChatEmployer
+  status: ChatRequestStatus
+  initial_message: string
+  created_at: string
+  updated_at: string
+  latest_message: {
+    id: number
+    sender_id: number
+    sender_name: string
+    content: string
+    created_at: string
+    is_read: boolean
+  } | null
+  unread_messages_count: number
 }
 
 export interface ApiError {

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+﻿import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { AppLayout, GuestLayout } from '@/components/layout/Layout'
 import { RequireAuth, GuestOnly } from '@/components/layout/RequireAuth'
@@ -19,6 +19,7 @@ import EmployerJobs from '@/pages/employer/Jobs'
 import EmployerJobForm from '@/pages/employer/JobForm'
 import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
+import Messages from '@/pages/messages/Messages'
 
 function App() {
   const { isLoading } = useAuth()
@@ -45,6 +46,16 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/jobs" element={<JobList />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
+
+        {/* Unified Messages route accessible to authenticated users */}
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth>
+              <Messages />
+            </RequireAuth>
+          }
+        />
 
         {/* Seeker routes */}
         <Route
