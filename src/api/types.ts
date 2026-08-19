@@ -1,4 +1,4 @@
-﻿export interface EmployerProfile {
+export interface EmployerProfile {
   id: number
   company_name: string
   website: string
@@ -30,8 +30,9 @@ export interface User {
   id: number
   email: string
   name: string
-  account_type: 'EMPLOYER' | 'SEEKER'
+  account_type: 'EMPLOYER' | 'SEEKER' | null
   is_active: boolean
+  is_staff: boolean
   date_joined: string
   employer_profile: EmployerProfile | null
   seeker_profile: SeekerProfile | null

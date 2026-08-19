@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { LoadingSpinner } from '@/components/ui'
 
 interface RequireAuthProps {
-  role?: 'EMPLOYER' | 'SEEKER'
+  role?: 'EMPLOYER' | 'SEEKER' | 'ADMIN'
   children: React.ReactNode
 }
 
@@ -23,8 +23,17 @@ export function RequireAuth({ role, children }: RequireAuthProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (role && user.account_type !== role) {
+  if (role === 'ADMIN' && !user.is_staff) {
+    // Non-admin trying to access admin pages
+    const redirect = user.account_type === 'EMPLOYER' ? '/employer/dashboard' : '/seeker/dashboard'
+    return <Navigate to={redirect} replace />
+  }
+
+  if (role && role !== 'ADMIN' && user.account_type !== role) {
     // Wrong role — redirect to the correct dashboard
+    if (user.is_staff) {
+      return <Navigate to="/admin/dashboard" replace />
+    }
     const redirect = user.account_type === 'EMPLOYER' ? '/employer/dashboard' : '/seeker/dashboard'
     return <Navigate to={redirect} replace />
   }
@@ -45,9 +54,13 @@ export function GuestOnly({ children }: { children: React.ReactNode }) {
   }
 
   if (user) {
+    if (user.is_staff) {
+      return <Navigate to="/admin/dashboard" replace />
+    }
     const redirect = user.account_type === 'EMPLOYER' ? '/employer/dashboard' : '/seeker/dashboard'
     return <Navigate to={redirect} replace />
   }
 
   return <>{children}</>
 }
+

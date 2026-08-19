@@ -7,7 +7,8 @@ import styles from './Layout.module.css'
 import { 
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
   FiUser, FiBriefcase, FiEdit, FiSettings, 
-  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell 
+  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell,
+  FiShield
 } from 'react-icons/fi'
 
 export function AppLayout() {
@@ -35,6 +36,11 @@ export function AppLayout() {
   }
 
   const navLinks = [
+    // Admin links (for staff/superuser)
+    ...(user?.is_staff ? [
+      { to: '/admin/dashboard', label: 'Admin Dashboard', icon: <FiShield /> },
+      { to: '/jobs', label: 'Browse Jobs', icon: <FiSearch /> },
+    ] : []),
     ...(user?.account_type === 'SEEKER' ? [
       { to: '/seeker/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },

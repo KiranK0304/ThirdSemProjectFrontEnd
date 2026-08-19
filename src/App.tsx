@@ -1,4 +1,4 @@
-﻿import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { AppLayout, GuestLayout } from '@/components/layout/Layout'
 import { RequireAuth, GuestOnly } from '@/components/layout/RequireAuth'
@@ -20,6 +20,7 @@ import EmployerJobForm from '@/pages/employer/JobForm'
 import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
 import Messages from '@/pages/messages/Messages'
+import AdminDashboard from '@/pages/admin/AdminDashboard'
 
 function App() {
   const { isLoading } = useAuth()
@@ -53,6 +54,16 @@ function App() {
           element={
             <RequireAuth>
               <Messages />
+            </RequireAuth>
+          }
+        />
+
+        {/* Admin routes */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <RequireAuth role="ADMIN">
+              <AdminDashboard />
             </RequireAuth>
           }
         />
