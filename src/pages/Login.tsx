@@ -21,7 +21,7 @@ export default function Login() {
     
     try {
       await login({ email, password })
-      navigate('/jobs')
+      navigate('/', { replace: true })
     } catch (err: any) {
       setError(extractApiError(err) || 'Failed to login')
     } finally {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Input, Button } from '@/components/ui'
-import { useRegister } from '@/hooks/queries/useAuthQueries'
+import { useAuth } from '@/context/AuthContext'
 import { extractApiError, extractFieldErrors } from '@/api/utils'
 import styles from './Register.module.css'
 
@@ -15,8 +15,9 @@ export default function Register() {
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   
-  const registerMutation = useRegister()
+  const { register } = useAuth()
   const navigate = useNavigate()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,16 +28,17 @@ export default function Register() {
       setFieldErrors({ confirmPassword: "Passwords do not match" })
       return
     }
-    
+
+    setIsSubmitting(true)
     try {
-      await registerMutation.mutateAsync({
+      await register({
         name,
         email,
         password,
         password_confirm: confirmPassword,
         account_type: accountType
       })
-      navigate('/login')
+      navigate('/', { replace: true })
     } catch (err: any) {
       const fieldErrs = extractFieldErrors(err)
       if (Object.keys(fieldErrs).length > 0) {
@@ -44,6 +46,8 @@ export default function Register() {
       } else {
         setGeneralError(extractApiError(err) || 'Registration failed')
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -105,7 +109,7 @@ export default function Register() {
             error={fieldErrors.confirmPassword}
           />
           
-          <Button variant="primary" type="submit" loading={registerMutation.isPending} disabled={registerMutation.isPending}>
+          <Button variant="primary" type="submit" loading={isSubmitting} disabled={isSubmitting}>
             Create account
           </Button>
           

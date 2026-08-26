@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, Input, Select, Tag, Button, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui'
 import { useJobs } from '@/hooks/queries/useJobQueries'
+import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
 import { formatEmploymentType } from '@/utils/format'
 import styles from './JobList.module.css'
@@ -149,6 +150,7 @@ export default function JobList() {
                       <h3 className={styles.jobTitle}>{job.title}</h3>
                       <span className={styles.companyName}>{job.employer?.company_name}</span>
                     </div>
+                    <SaveJobButton jobId={job.id} stopPropagation />
                   </div>
                   
                   <div className={styles.jobTags}>

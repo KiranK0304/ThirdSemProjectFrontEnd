@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useJob } from '@/hooks/queries/useJobQueries'
 import { useApplyToJob } from '@/hooks/queries/useApplicationQueries'
 import { useResumes } from '@/hooks/queries/useResumeQueries'
+import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { extractApiError } from '@/api/utils'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
 import { formatEmploymentType } from '@/utils/format'
@@ -110,6 +111,7 @@ export default function JobDetail() {
               Message Employer
             </Button>
           )}
+          <SaveJobButton jobId={job.id} />
           <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
             Apply Now
           </Button>
