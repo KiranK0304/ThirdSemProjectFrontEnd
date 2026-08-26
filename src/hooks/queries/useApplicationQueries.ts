@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   applyToJobApi, getSeekerApplicationsApi, getSeekerApplicationApi, 
   withdrawApplicationApi, getJobApplicantsApi, getEmployerApplicationsApi, 
-  updateApplicationStatusApi 
+  updateApplicationStatusApi, getSeekerInterviewsApi
 } from '../../api/applications';
 
 export const useSeekerApplications = () => {
@@ -62,5 +62,12 @@ export const useUpdateApplicationStatus = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employer'] });
     },
+  });
+};
+
+export const useSeekerInterviews = () => {
+  return useQuery({
+    queryKey: ['seeker', 'interviews'],
+    queryFn: () => getSeekerInterviewsApi(),
   });
 };

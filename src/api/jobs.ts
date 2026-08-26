@@ -6,6 +6,8 @@ import {
   JobAlertInput,
   JobFilters,
   SavedJob,
+  RecommendedJob,
+  JobBookmark,
 } from './types';
 
 export const getJobsApi = async (filters?: JobFilters): Promise<Job[]> => {
@@ -82,4 +84,23 @@ export const deleteJobAlertApi = async (id: number): Promise<void> => {
 export const getJobAlertMatchesApi = async (id: number): Promise<Job[]> => {
   const response = await api.get<Job[]>(`/api/jobs/alerts/${id}/matches/`);
   return response.data;
+};
+
+export const getRecommendedJobsApi = async (): Promise<RecommendedJob[]> => {
+  const response = await api.get<RecommendedJob[]>('/api/jobs/recommendations/');
+  return response.data;
+};
+
+export const getBookmarksApi = async (): Promise<JobBookmark[]> => {
+  const response = await api.get<JobBookmark[]>('/api/jobs/bookmarks/');
+  return response.data;
+};
+
+export const bookmarkJobApi = async (jobId: number): Promise<JobBookmark> => {
+  const response = await api.post<JobBookmark>(`/api/jobs/${jobId}/bookmark/`);
+  return response.data;
+};
+
+export const unbookmarkJobApi = async (jobId: number): Promise<void> => {
+  await api.delete(`/api/jobs/${jobId}/bookmark/`);
 };

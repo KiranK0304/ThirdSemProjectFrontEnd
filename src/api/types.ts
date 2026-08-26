@@ -130,7 +130,7 @@ export interface Application {
   seeker: ApplicationSeeker
   resume: Resume | null
   cover_letter: string
-  status: 'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'REJECTED'
+  status: 'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'OFFERED' | 'REJECTED' | 'WITHDRAWN'
   created_at: string
   updated_at: string
 }
@@ -200,6 +200,30 @@ export interface ChatRequest {
     is_read: boolean
   } | null
   unread_messages_count: number
+}
+
+export interface RecommendedJob extends Job {
+  match_score: number
+}
+
+export interface JobBookmark {
+  id: number
+  job: Job
+  created_at: string
+}
+
+export interface Interview {
+  id: number
+  application_id: number
+  job_title: string
+  seeker_email: string
+  scheduled_at: string
+  duration_minutes: number
+  meeting_url: string
+  notes: string
+  status: 'SCHEDULED' | 'CANCELLED' | 'COMPLETED'
+  created_at: string
+  updated_at: string
 }
 
 export interface ApiError {

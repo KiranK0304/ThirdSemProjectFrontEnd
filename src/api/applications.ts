@@ -1,5 +1,5 @@
 import { api } from './client';
-import { Application } from './types';
+import { Application, Interview } from './types';
 
 export const applyToJobApi = async (jobId: number, data: { cover_letter?: string; resume_id?: number }): Promise<Application> => {
   const response = await api.post<Application>(`/api/jobs/${jobId}/apply/`, data);
@@ -33,5 +33,10 @@ export const getEmployerApplicationsApi = async (): Promise<Application[]> => {
 
 export const updateApplicationStatusApi = async (id: number, status: string): Promise<Application> => {
   const response = await api.patch<Application>(`/api/employer/applications/${id}/status/`, { status });
+  return response.data;
+};
+
+export const getSeekerInterviewsApi = async (): Promise<Interview[]> => {
+  const response = await api.get<Interview[]>('/api/seeker/interviews/');
   return response.data;
 };

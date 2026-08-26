@@ -4,6 +4,7 @@ import {
   createJobApi, updateJobApi, deleteJobApi, getSavedJobsApi, saveJobApi,
   unsaveJobApi, getJobAlertsApi, createJobAlertApi, updateJobAlertApi,
   deleteJobAlertApi, getJobAlertMatchesApi,
+  getRecommendedJobsApi, getBookmarksApi, bookmarkJobApi, unbookmarkJobApi,
 } from '../../api/jobs';
 import { JobAlertInput, JobFilters, EmployerJobFilters, Job } from '../../api/types';
 
@@ -138,5 +139,42 @@ export const useJobAlertMatches = (id: number, enabled = true) => {
     queryKey: ['job-alerts', id, 'matches'],
     queryFn: () => getJobAlertMatchesApi(id),
     enabled,
+  });
+};
+
+export const useRecommendedJobs = () => {
+  return useQuery({
+    queryKey: ['recommended-jobs'],
+    queryFn: getRecommendedJobsApi,
+  });
+};
+
+export const useBookmarks = (enabled = true) => {
+  return useQuery({
+    queryKey: ['bookmarks'],
+    queryFn: getBookmarksApi,
+    enabled,
+  });
+};
+
+export const useBookmarkJob = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: bookmarkJobApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+      queryClient.invalidateQueries({ queryKey: ['recommended-jobs'] });
+    },
+  });
+};
+
+export const useUnbookmarkJob = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: unbookmarkJobApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+      queryClient.invalidateQueries({ queryKey: ['recommended-jobs'] });
+    },
   });
 };
