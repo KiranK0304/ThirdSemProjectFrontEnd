@@ -24,3 +24,9 @@ export const deleteResumeApi = async (id: number): Promise<void> => {
   const response = await api.delete(`/api/auth/seeker/resumes/${id}/`);
   return response.data;
 };
+
+export const setPrimaryResumeApi = async (id: number): Promise<Resume> => {
+  const response = await api.post<Resume>(`/api/auth/seeker/resumes/${id}/set-primary/`);
+  return response.data;
+};
+

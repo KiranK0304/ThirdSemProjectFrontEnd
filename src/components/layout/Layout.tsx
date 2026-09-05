@@ -9,7 +9,7 @@ import {
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
   FiUser, FiBriefcase, FiEdit, FiSettings, 
   FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell,
-  FiShield, FiBookmark
+  FiShield, FiBookmark, FiCpu
 } from 'react-icons/fi'
 
 export function AppLayout() {
@@ -65,6 +65,7 @@ export function AppLayout() {
     ...(user?.account_type === 'EMPLOYER' ? [
       { to: '/employer/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/employer/jobs', label: 'My Jobs', icon: <FiBriefcase /> },
+      { to: '/employer/shortlist', label: 'AI Shortlist', icon: <FiCpu /> },
       { to: '/employer/jobs/new', label: 'Post a Job', icon: <FiEdit /> },
       { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
       { to: '/employer/profile', label: 'Company Profile', icon: <FiBriefcase /> },

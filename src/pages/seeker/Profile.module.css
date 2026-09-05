@@ -41,6 +41,18 @@
   color: var(--color-text-muted);
 }
 
+.resumeSuccess {
+  font-size: 13px;
+  color: var(--color-success);
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: var(--color-success-subtle);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .resumeList {
   display: flex;
   flex-direction: column;
@@ -52,39 +64,140 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 18px;
   background-color: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  gap: 16px;
+}
+
+.resumeItemPrimary {
+  border-color: var(--color-accent);
+  background-color: #FAFAF7;
+}
+
+.resumeLeft {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.fileIconWrapper {
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
 }
 
 .resumeInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  min-width: 0;
 }
 
-.resumeTitle {
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.resumeTitleLink {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text-primary);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.resumeTitleLink:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.primaryBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent-subtle-text);
+  letter-spacing: 0.2px;
 }
 
 .resumeDate {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
+}
+
+.resumeActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.actionLink {
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.btnAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.deleteBtn {
+  color: var(--color-danger);
+}
+
+.deleteBtn:hover {
+  background-color: var(--color-danger-subtle);
+  color: var(--color-danger);
 }
 
 .uploadForm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-top: 16px;
+  gap: 14px;
+  padding-top: 20px;
   border-top: 1px solid var(--color-border);
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
 .fileInput {
   font-size: 13px;
   color: var(--color-text-secondary);
+}
+
+.uploadCheckboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
 }
 
 .uploadActions {
@@ -99,10 +212,18 @@
   padding: 12px 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .resumeItem {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
+  }
+
+  .resumeActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--color-border);
+    padding-top: 10px;
   }
 }

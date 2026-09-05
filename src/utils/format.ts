@@ -45,3 +45,17 @@ export function getJobStatusVariant(status: string): 'neutral' | 'success' | 'da
     default: return 'neutral'
   }
 }
+
+/**
+ * Normalizes a media URL (such as a resume file URL).
+ * If the URL references an internal Docker container hostname (e.g. http://django:8000),
+ * converts it to a relative path so the browser requests it through the frontend proxy.
+ */
+export function getMediaUrl(url?: string | null): string {
+  if (!url) return '#'
+  if (url.includes('://django:') || url.includes('://django/')) {
+    return url.replace(/^https?:\/\/django(:\d+)?/, '')
+  }
+  return url
+}
+

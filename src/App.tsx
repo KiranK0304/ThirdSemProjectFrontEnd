@@ -21,6 +21,7 @@ import EmployerJobs from '@/pages/employer/Jobs'
 import EmployerJobForm from '@/pages/employer/JobForm'
 import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
+import ResumeShortlist from '@/pages/employer/ResumeShortlist'
 import Messages from '@/pages/messages/Messages'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 
@@ -134,6 +135,14 @@ function App() {
           element={
             <RequireAuth role="EMPLOYER">
               <EmployerJobs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/employer/shortlist"
+          element={
+            <RequireAuth role="EMPLOYER">
+              <ResumeShortlist />
             </RequireAuth>
           }
         />

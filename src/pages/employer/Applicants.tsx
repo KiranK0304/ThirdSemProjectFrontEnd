@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, Tag, Avatar, Select, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
 import { useEmployerJob } from '@/hooks/queries/useJobQueries';
 import { useEmployerJobApplicants, useUpdateApplicationStatus } from '@/hooks/queries/useApplicationQueries';
-import { getApplicationStatusVariant } from '@/utils/format';
+import { getApplicationStatusVariant, getMediaUrl } from '@/utils/format';
 import styles from './Applicants.module.css';
 
 const STATUS_OPTIONS = [
@@ -86,7 +86,7 @@ export const Applicants: React.FC = () => {
 
                 {app.resume && (
                   <div className={styles.resumeSection}>
-                    Resume: <a href={app.resume.file_url} target="_blank" rel="noopener noreferrer" className={styles.resumeLink}>{app.resume.title || 'Download Resume'}</a>
+                    Resume: <a href={getMediaUrl(app.resume.file_url)} target="_blank" rel="noopener noreferrer" className={styles.resumeLink}>{app.resume.title || 'Download Resume'}</a>
                   </div>
                 )}
 

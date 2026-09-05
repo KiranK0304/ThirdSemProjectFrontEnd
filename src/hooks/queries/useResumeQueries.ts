@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getResumesApi, uploadResumeApi, deleteResumeApi } from '../../api/resumes';
+import { getResumesApi, uploadResumeApi, deleteResumeApi, setPrimaryResumeApi } from '../../api/resumes';
 
 export const useResumes = () => {
   return useQuery({
@@ -29,3 +29,15 @@ export const useDeleteResume = () => {
     },
   });
 };
+
+export const useSetPrimaryResume = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => setPrimaryResumeApi(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seeker', 'resumes'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+};
+

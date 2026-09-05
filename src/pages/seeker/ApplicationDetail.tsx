@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { Button, Card, Tag, Modal, LoadingSpinner, ErrorState } from '@/components/ui'
 import { useSeekerApplication, useWithdrawApplication } from '@/hooks/queries/useApplicationQueries'
 import { formatDate, formatSalary } from '@/utils/date'
-import { formatEmploymentType, formatStatus, getApplicationStatusVariant } from '@/utils/format'
+import { formatEmploymentType, formatStatus, getApplicationStatusVariant, getMediaUrl } from '@/utils/format'
 import { extractApiError } from '@/api/utils'
 import styles from './ApplicationDetail.module.css'
 
@@ -79,7 +79,7 @@ export default function ApplicationDetail() {
             <h3>Attached Resume</h3>
             <p className={styles.body}>
               {application.resume.title} ·{' '}
-              <a href={application.resume.file_url} target="_blank" rel="noopener noreferrer" className={styles.link}>
+              <a href={getMediaUrl(application.resume.file_url)} target="_blank" rel="noopener noreferrer" className={styles.link}>
                 Download
               </a>
             </p>

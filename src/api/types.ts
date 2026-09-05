@@ -13,6 +13,7 @@ export interface Resume {
   title: string
   file: string
   file_url: string
+  is_primary?: boolean
   created_at: string
   updated_at: string
 }
@@ -239,4 +240,61 @@ export interface Notification {
   related_url: string
   is_read: boolean
   created_at: string
+}
+
+export interface CriterionDetail {
+  score: number
+  reason: string
+}
+
+export interface RankedCandidate {
+  rank: number
+  candidate_id: number
+  application_id: number
+  candidate_name: string
+  candidate_email: string
+  criteria_scores: Record<string, number>
+  criteria_details: Record<string, CriterionDetail>
+  final_score: number
+  resume_url?: string
+}
+
+export interface JobRankingResponse {
+  job_id: number
+  job_title: string
+  weights_used: Record<string, number>
+  total_candidates: number
+  ranked_candidates: RankedCandidate[]
+  created_at: string
+}
+
+export interface JobCriteriaResponse {
+  job_id: number
+  weights: Record<string, number>
+  is_custom: boolean
+}
+
+export interface CopilotAction {
+  action_type: 'shortlist' | 'copy_text' | 'filter' | 'inspect' | string
+  label: string
+  application_id?: number
+  candidate_id?: number
+  candidate_name?: string
+  payload?: string
+}
+
+export interface CopilotMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export interface CopilotRequest {
+  message: string
+  history?: CopilotMessage[]
+  candidate_ids?: number[]
+}
+
+export interface CopilotResponse {
+  reply: string
+  suggested_actions: CopilotAction[]
 }
