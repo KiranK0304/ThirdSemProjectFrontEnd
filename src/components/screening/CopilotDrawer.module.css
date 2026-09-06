@@ -495,3 +495,188 @@
   display: flex;
   justify-content: space-between;
 }
+
+/* Modern Copilot Enhancements: Sessions, Tool Badges & Candidate Cards */
+.sessionBar {
+  padding: 8px 16px;
+  background-color: var(--color-surface-muted, #f9fafb);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sessionSelect {
+  flex: 1;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-primary, #111827);
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  padding: 5px 8px;
+  outline: none;
+  cursor: pointer;
+}
+
+.newSessionBtn {
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 6px);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary, #111827);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.newSessionBtn:hover {
+  background-color: var(--color-accent-subtle, #fef3c7);
+  border-color: var(--color-accent, #d97706);
+  color: var(--color-accent, #d97706);
+}
+
+.toolBadgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.toolBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background-color: var(--color-surface-muted, #f3f4f6);
+  border: 1px solid var(--color-border, #e5e7eb);
+  color: var(--color-accent, #d97706);
+}
+
+.candidateCardsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+}
+
+.candidateCard {
+  background-color: var(--color-surface-muted, #f9fafb);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-sm, 8px);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary, #111827);
+}
+
+.cardFitBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.badgeStrong {
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.badgeModerate {
+  background-color: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.badgeWeak {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.cardMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.evidenceBox {
+  background-color: var(--color-surface, #ffffff);
+  border-left: 3px solid var(--color-accent, #d97706);
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-secondary, #4b5563);
+  border-radius: 0 4px 4px 0;
+}
+
+.evidenceSectionTitle {
+  font-weight: 600;
+  color: var(--color-text-primary, #111827);
+  margin-bottom: 2px;
+}
+
+.cardActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cardShortlistBtn {
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d1d5db);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-text-primary, #111827);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.cardShortlistBtn:hover {
+  border-color: var(--color-success, #10b981);
+  color: var(--color-success, #10b981);
+}
+
+.cardShortlistedBadge {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-success, #10b981);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

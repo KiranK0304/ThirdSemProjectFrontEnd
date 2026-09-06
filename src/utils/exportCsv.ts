@@ -73,3 +73,66 @@ export const exportShortlistToCsv = (
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
+
+import { Application } from '../api/types';
+
+export const exportApplicationsToCsv = (
+  jobTitle: string,
+  applications: Application[]
+): void => {
+  if (!applications || applications.length === 0) {
+    return;
+  }
+
+  const headers = [
+    'Application ID',
+    'Candidate Name',
+    'Candidate Email',
+    'Status',
+    'AI Overall Score (%)',
+    'AI Recommendation',
+    'Total Experience (Yrs)',
+    'Key Skills',
+    'Summary',
+  ];
+
+  const rows = applications.map((app) => {
+    const analysis = app.analysis;
+    const name = app.seeker?.user_name || app.seeker?.user_email || `Applicant #${app.id}`;
+    const email = app.seeker?.user_email || '';
+    const score = analysis?.overall_score != null ? `${analysis.overall_score}%` : 'N/A';
+    const rec = analysis?.recommendation || 'PENDING';
+    const exp = analysis?.total_years_experience ?? 'N/A';
+    const skills = (analysis?.skills || []).join(', ');
+    const summary = analysis?.summary || '';
+
+    return [
+      escapeCsvField(app.id),
+      escapeCsvField(name),
+      escapeCsvField(email),
+      escapeCsvField(app.status),
+      escapeCsvField(score),
+      escapeCsvField(rec),
+      escapeCsvField(exp),
+      escapeCsvField(skills),
+      escapeCsvField(summary),
+    ].join(',');
+  });
+
+  const csvContent = [headers.map(escapeCsvField).join(','), ...rows].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const cleanTitle = jobTitle.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+  const dateStr = new Date().toISOString().split('T')[0];
+  const filename = `applicants_${cleanTitle}_${dateStr}.csv`;
+
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};

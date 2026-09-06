@@ -38,6 +38,9 @@ function App() {
 
   return (
     <Routes>
+      {/* Public standalone Landing page */}
+      <Route path="/" element={<Landing />} />
+
       {/* Guest-only routes (login/register) */}
       <Route element={<GuestOnly><GuestLayout /></GuestOnly>}>
         <Route path="/login" element={<Login />} />
@@ -47,7 +50,6 @@ function App() {
       {/* Main app routes with sidebar layout */}
       <Route element={<AppLayout />}>
         {/* Public routes */}
-        <Route path="/" element={<Landing />} />
         <Route path="/jobs" element={<JobList />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
 

@@ -1,34 +1,54 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  FiCpu, FiX, FiSend, FiCheck, FiCopy, 
-  FiUsers, FiLayers, FiHelpCircle, FiMail, 
-  FiUser, FiSearch, FiZap
+  FiCpu, FiX, FiSend, FiCheck, FiPlus, 
+  FiSearch, FiAward, FiBarChart2, FiCheckCircle
 } from 'react-icons/fi';
-import { useJobCopilot } from '../../hooks/queries/useScreeningQueries';
-import { CopilotAction, CopilotMessage, RankedCandidate } from '../../api/types';
+import { 
+  useJobCopilotSessions, 
+  useCreateCopilotSession, 
+  useSessionMessages, 
+  useSendCopilotMessage 
+} from '../../hooks/queries/useCopilotQueries';
+import { CopilotMessageItem, CopilotCandidateProfile } from '../../api/types';
 import styles from './CopilotDrawer.module.css';
 
 interface CopilotDrawerProps {
   jobId: number;
   jobTitle: string;
   totalCandidates: number;
-  candidates: RankedCandidate[];
-  selectedCandidateAppId?: number | null;
-  onSelectCandidate?: (applicationId: number | null) => void;
   isOpen: boolean;
   onClose: () => void;
   onShortlistCandidate: (applicationId: number, candidateName?: string) => Promise<void> | void;
   shortlistedIds: Set<number>;
 }
 
-interface DisplayMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  suggested_actions?: CopilotAction[];
-}
+// Inline helper for **bold** and `code`
+const formatInline = (text: string): React.ReactNode => {
+  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} style={{ fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code
+          key={i}
+          style={{
+            backgroundColor: 'var(--color-surface-muted, #f3f4f6)',
+            padding: '2px 4px',
+            borderRadius: '4px',
+            fontSize: '12px',
+          }}
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+};
 
-// Lightweight clean renderer for markdown formatting in agent responses
+// Clean renderer for markdown formatting in agent responses
 const renderMarkdown = (text: string) => {
   const lines = text.split('\n');
   const elements: React.ReactNode[] = [];
@@ -54,26 +74,26 @@ const renderMarkdown = (text: string) => {
       return;
     }
 
-    // Headers: ### or ##
     if (trimmed.startsWith('### ')) {
       flushList();
       elements.push(
-        <h3 key={`h3-${idx}`} style={{ fontSize: '14.5px', fontWeight: 500, margin: '10px 0 4px 0', color: 'var(--color-text-primary)' }}>
+        <h3 key={`h3-${idx}`} style={{ fontSize: '14.5px', fontWeight: 600, margin: '10px 0 4px 0', color: 'var(--color-text-primary)' }}>
           {formatInline(trimmed.substring(4))}
         </h3>
       );
     } else if (trimmed.startsWith('## ')) {
       flushList();
       elements.push(
-        <h3 key={`h2-${idx}`} style={{ fontSize: '15px', fontWeight: 500, margin: '12px 0 6px 0', color: 'var(--color-text-primary)' }}>
+        <h3 key={`h2-${idx}`} style={{ fontSize: '15px', fontWeight: 600, margin: '12px 0 6px 0', color: 'var(--color-text-primary)' }}>
           {formatInline(trimmed.substring(3))}
         </h3>
       );
-    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.startsWith('• ')) {
       inList = true;
+      const bulletContent = trimmed.replace(/^[-*•]\s*/, '');
       listItems.push(
         <li key={`li-${idx}`} style={{ marginBottom: '4px' }}>
-          {formatInline(trimmed.substring(2))}
+          {formatInline(bulletContent)}
         </li>
       );
     } else if (/^\d+\.\s/.test(trimmed)) {
@@ -98,163 +118,88 @@ const renderMarkdown = (text: string) => {
   return elements;
 };
 
-// Inline helper for **bold** and `code`
-const formatInline = (text: string): React.ReactNode => {
-  const parts = text.split(/(\*\*.*?\*\*|`.*?`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ fontWeight: 500 }}>{part.slice(2, -2)}</strong>;
-    }
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return (
-        <code
-          key={i}
-          style={{
-            backgroundColor: 'var(--color-surface-muted, #f3f4f6)',
-            padding: '2px 4px',
-            borderRadius: '4px',
-            fontSize: '12px',
-          }}
-        >
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-    return part;
-  });
-};
-
 export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
   jobId,
   jobTitle,
   totalCandidates,
-  candidates,
-  selectedCandidateAppId,
-  onSelectCandidate,
   isOpen,
   onClose,
   onShortlistCandidate,
   shortlistedIds,
 }) => {
-  const [messages, setMessages] = useState<DisplayMessage[]>([]);
+  const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
-  const [copiedActionIndex, setCopiedActionIndex] = useState<string | null>(null);
-  const [focusedAppId, setFocusedAppId] = useState<number | null>(selectedCandidateAppId ?? null);
-
-  const copilotMutation = useJobCopilot();
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Keep internal focused ID in sync if parent changes it
+  // Sessions query & mutation
+  const { data: sessions, isLoading: isLoadingSessions } = useJobCopilotSessions(jobId);
+  const createSessionMutation = useCreateCopilotSession();
+
+  // Messages query & mutation
+  const { data: messages, isLoading: isLoadingMessages } = useSessionMessages(activeSessionId);
+  const sendMessageMutation = useSendCopilotMessage();
+
+  // Auto-select latest session or create one if none exist
   useEffect(() => {
-    if (selectedCandidateAppId !== undefined) {
-      setFocusedAppId(selectedCandidateAppId);
+    if (sessions && sessions.length > 0) {
+      if (!activeSessionId || !sessions.some((s) => s.id === activeSessionId)) {
+        setActiveSessionId(sessions[0].id);
+      }
     }
-  }, [selectedCandidateAppId]);
+  }, [sessions, activeSessionId]);
 
-  const focusedCandidate = candidates.find((c) => c.application_id === focusedAppId);
-
-  // Initialize greeting on job selection
-  useEffect(() => {
-    if (jobId) {
-      setMessages([
-        {
-          id: 'welcome',
-          role: 'assistant',
-          content: `### TalentWright AI Recruiter Copilot Ready\n\n` +
-            `I have analyzed the **${totalCandidates} candidate resumes** for **${jobTitle}**.\n\n` +
-            `Use the **Agent Context** selector above to switch between evaluating the entire applicant pool or drilling down into any individual candidate.`,
-        },
-      ]);
-    }
-  }, [jobId, jobTitle, totalCandidates]);
-
-  // Scroll to bottom when messages update
+  // Auto-scroll to bottom on messages update
   useEffect(() => {
     if (isOpen) {
       chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, copilotMutation.isPending, isOpen]);
+  }, [messages, sendMessageMutation.isPending, isOpen]);
 
   if (!isOpen) return null;
 
-  const handleContextChange = (appId: number | null) => {
-    setFocusedAppId(appId);
-    onSelectCandidate?.(appId);
-
-    if (appId) {
-      const cand = candidates.find((c) => c.application_id === appId);
-      if (cand) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `focus-${Date.now()}`,
-            role: 'assistant',
-            content: `### Switched Context to ${cand.candidate_name} (Rank #${cand.rank}, ${cand.final_score.toFixed(1)}% Match)\n\n` +
-              `I am now analyzing **${cand.candidate_name}**'s resume against your criteria. What would you like to investigate?`,
-          },
-        ]);
-      }
-    } else {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `focus-all-${Date.now()}`,
-          role: 'assistant',
-          content: `### Switched Context to Entire Talent Pool\n\n` +
-            `Now assessing all **${totalCandidates} applicants** across the leaderboard.`,
-        },
-      ]);
+  const handleCreateNewSession = async () => {
+    try {
+      const newSession = await createSessionMutation.mutateAsync({
+        jobId,
+        title: `Chat ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      });
+      setActiveSessionId(newSession.id);
+    } catch (err) {
+      console.error('Failed to create copilot session:', err);
     }
   };
 
   const handleSendMessage = async (customMessage?: string) => {
     const textToSend = customMessage || inputValue.trim();
-    if (!textToSend || copilotMutation.isPending) return;
+    if (!textToSend || sendMessageMutation.isPending) return;
 
-    const userMessage: DisplayMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: textToSend,
-    };
+    let targetSessionId = activeSessionId;
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Create session on the fly if none exists yet
+    if (!targetSessionId) {
+      try {
+        const newSession = await createSessionMutation.mutateAsync({
+          jobId,
+          title: textToSend.slice(0, 40),
+        });
+        targetSessionId = newSession.id;
+        setActiveSessionId(newSession.id);
+      } catch (err) {
+        console.error('Failed to auto-create session:', err);
+        return;
+      }
+    }
+
     if (!customMessage) setInputValue('');
 
-    // Prepare history for backend API
-    const historyPayload: CopilotMessage[] = messages
-      .filter((m) => m.id !== 'welcome')
-      .map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-
     try {
-      const response = await copilotMutation.mutateAsync({
-        jobId,
-        request: {
-          message: textToSend,
-          history: historyPayload,
-          candidate_ids: focusedAppId ? [focusedAppId] : [],
-        },
+      await sendMessageMutation.mutateAsync({
+        sessionId: targetSessionId,
+        message: textToSend,
       });
-
-      const assistantMessage: DisplayMessage = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: response.reply,
-        suggested_actions: response.suggested_actions,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      console.error('Copilot request failed:', err);
-      const errorMessage: DisplayMessage = {
-        id: `error-${Date.now()}`,
-        role: 'assistant',
-        content: `Sorry, I encountered an issue analyzing the candidates. Please check your connection and try again.`,
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      console.error('Failed to send copilot message:', err);
     }
   };
 
@@ -265,23 +210,23 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
     }
   };
 
-  const handleExecuteAction = async (action: CopilotAction, actionKey: string) => {
-    if (action.action_type === 'shortlist' && action.application_id) {
-      await onShortlistCandidate(action.application_id, action.candidate_name);
-    } else if (action.action_type === 'copy_text' && action.payload) {
-      try {
-        await navigator.clipboard.writeText(action.payload);
-        setCopiedActionIndex(actionKey);
-        setTimeout(() => setCopiedActionIndex(null), 2500);
-      } catch (err) {
-        console.error('Failed to copy text to clipboard:', err);
+  // Helper to extract candidate list from metadata
+  const extractCandidates = (metadata: any): CopilotCandidateProfile[] => {
+    if (!metadata || !metadata.candidates) return [];
+    if (Array.isArray(metadata.candidates)) {
+      return metadata.candidates;
+    }
+    // Dict of multiple tools: search_candidates, get_top_candidates, etc.
+    const aggregated: CopilotCandidateProfile[] = [];
+    for (const val of Object.values(metadata.candidates)) {
+      if (Array.isArray(val)) {
+        aggregated.push(...(val as CopilotCandidateProfile[]));
+      } else if (val && typeof val === 'object' && Array.isArray((val as any).results)) {
+        aggregated.push(...(val as any).results);
       }
     }
+    return aggregated;
   };
-
-  const firstName = focusedCandidate
-    ? focusedCandidate.candidate_name.split(' ')[0]
-    : '';
 
   return (
     <div className={styles.drawerContainer}>
@@ -292,158 +237,119 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
             <FiCpu />
           </div>
           <div className={styles.agentTitleBlock}>
-            <h3 className={styles.agentTitle}>
-              AI Recruiter Copilot
-            </h3>
-            <span className={styles.agentSubtitle}>
+            <h2 className={styles.agentTitle}>
+              Recruiter AI Copilot
+            </h2>
+            <p className={styles.agentSubtitle}>
               <span className={styles.onlinePulse} />
-              Active · {totalCandidates} Candidates Analyzed
-            </span>
+              {jobTitle} • {totalCandidates} Applicants Indexed
+            </p>
           </div>
         </div>
-
         <button
           type="button"
           className={styles.closeButton}
           onClick={onClose}
-          aria-label="Close AI Copilot"
+          aria-label="Close Copilot"
         >
           <FiX />
         </button>
       </div>
 
-      {/* Unified Single Drawer Context Bar */}
-      <div className={styles.contextBar}>
-        <label htmlFor="context-select" className={styles.contextLabel}>
-          <FiUser size={13} /> Active Focus:
-        </label>
-        <select
-          id="context-select"
-          className={styles.contextSelect}
-          value={focusedAppId ?? 'all'}
-          onChange={(e) => {
-            const val = e.target.value === 'all' ? null : Number(e.target.value);
-            handleContextChange(val);
-          }}
-        >
-          <option value="all">🌐 Entire Talent Pool ({totalCandidates} Candidates)</option>
-          {candidates.map((c) => (
-            <option key={c.application_id} value={c.application_id}>
-              #{c.rank} {c.candidate_name} ({c.final_score.toFixed(1)}% Match)
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Candidate Focus Mini Card (when an individual candidate is selected) */}
-      {focusedCandidate && (
-        <div className={styles.candidateFocusCard}>
-          <div className={styles.focusCardTop}>
-            <span className={styles.focusRank}>#{focusedCandidate.rank}</span>
-            <div className={styles.focusNameCol}>
-              <span className={styles.focusName}>{focusedCandidate.candidate_name}</span>
-              <span className={styles.focusEmail}>{focusedCandidate.candidate_email}</span>
-            </div>
-            <span className={styles.focusScore}>{focusedCandidate.final_score.toFixed(1)}%</span>
-          </div>
-          <div className={styles.focusScoresRow}>
-            {Object.entries(focusedCandidate.criteria_scores || {}).map(([crit, score]) => (
-              <span key={crit} className={styles.focusMiniBadge}>
-                {crit}: <strong>{score}</strong>
-              </span>
+      {/* Sessions Bar */}
+      <div className={styles.sessionBar}>
+        {sessions && sessions.length > 0 ? (
+          <select
+            className={styles.sessionSelect}
+            value={activeSessionId ?? ''}
+            onChange={(e) => setActiveSessionId(Number(e.target.value))}
+          >
+            {sessions.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.title || `Session #${s.id}`} ({s.message_count} msgs)
+              </option>
             ))}
-          </div>
-        </div>
-      )}
+          </select>
+        ) : (
+          <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+            No previous chats
+          </span>
+        )}
+        <button
+          type="button"
+          className={styles.newSessionBtn}
+          onClick={handleCreateNewSession}
+          disabled={createSessionMutation.isPending}
+          title="Start a new chat thread"
+        >
+          <FiPlus /> New Chat
+        </button>
+      </div>
 
-      {/* Quick Skills Bar */}
+      {/* Suggested Quick Inquiries */}
       <div className={styles.skillsSection}>
-        <div className={styles.skillsLabel}>Agent Skills & Shortcuts</div>
+        <div className={styles.skillsLabel}>Quick Inquiries</div>
         <div className={styles.skillsGrid}>
-          {focusedCandidate ? (
-            <>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage(`Generate 4 tailored interview questions for ${focusedCandidate.candidate_name} probing technical depth, architecture decisions, and potential gaps.`)}
-                disabled={copilotMutation.isPending}
-              >
-                <FiHelpCircle size={13} /> Questions for {firstName}
-              </button>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage(`Draft a personalized interview invitation email for ${focusedCandidate.candidate_name} referencing their specific achievements.`)}
-                disabled={copilotMutation.isPending}
-              >
-                <FiMail size={13} /> Draft Invite Email
-              </button>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage(`Analyze ${focusedCandidate.candidate_name}'s key strengths, potential weaknesses, and why they scored ${focusedCandidate.final_score.toFixed(1)}%.`)}
-                disabled={copilotMutation.isPending}
-              >
-                <FiSearch size={13} /> Strengths & Gaps
-              </button>
-              {!shortlistedIds.has(focusedCandidate.application_id) && (
-                <button
-                  type="button"
-                  className={styles.skillButton}
-                  onClick={() => handleExecuteAction({
-                    action_type: 'shortlist',
-                    label: `Shortlist ${focusedCandidate.candidate_name}`,
-                    application_id: focusedCandidate.application_id,
-                    candidate_name: focusedCandidate.candidate_name,
-                  }, 'top-action')}
-                >
-                  <FiZap size={13} /> Shortlist {firstName}
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage('Compare the top 2 ranked candidates side-by-side, evaluate their trade-offs, and recommend the best fit.')}
-                disabled={copilotMutation.isPending || totalCandidates < 2}
-              >
-                <FiLayers size={13} /> Compare Top 2
-              </button>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage('Generate 4 tailored interview questions for the top ranked candidate focusing on probing technical depth and potential gaps.')}
-                disabled={copilotMutation.isPending || totalCandidates === 0}
-              >
-                <FiHelpCircle size={13} /> Questions for #1
-              </button>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage('Draft a personalized, professional interview invitation email for the top ranked candidate.')}
-                disabled={copilotMutation.isPending || totalCandidates === 0}
-              >
-                <FiMail size={13} /> Draft Top Invite
-              </button>
-              <button
-                type="button"
-                className={styles.skillButton}
-                onClick={() => handleSendMessage('Provide an executive summary of this applicant talent pool, key skill clusters, and overall candidate readiness.')}
-                disabled={copilotMutation.isPending || totalCandidates === 0}
-              >
-                <FiUsers size={13} /> Talent Pool Summary
-              </button>
-            </>
-          )}
+          <button
+            type="button"
+            className={styles.skillButton}
+            onClick={() => handleSendMessage("Who are the top 5 candidates for this role?")}
+            disabled={sendMessageMutation.isPending}
+          >
+            <FiAward /> Top Applicants
+          </button>
+          <button
+            type="button"
+            className={styles.skillButton}
+            onClick={() => handleSendMessage("Find candidates with deep hands-on Python and backend experience")}
+            disabled={sendMessageMutation.isPending}
+          >
+            <FiSearch /> Python & AI Depth
+          </button>
+          <button
+            type="button"
+            className={styles.skillButton}
+            onClick={() => handleSendMessage("Compare the top 2 candidates and highlight their trade-offs")}
+            disabled={sendMessageMutation.isPending}
+          >
+            <FiBarChart2 /> Compare Candidates
+          </button>
         </div>
       </div>
 
-      {/* Messages Thread */}
+      {/* Messages Area */}
       <div className={styles.chatArea}>
-        {messages.map((msg, msgIdx) => {
-          const isUser = msg.role === 'user';
+        {(!messages || messages.length === 0) && !isLoadingMessages && (
+          <div className={styles.messageRow}>
+            <div className={styles.assistantBubble}>
+              <div className={styles.assistantHeader}>
+                <FiCpu /> Senior Talent Advisor Ready
+              </div>
+              <div className={styles.markdownContent}>
+                <p>
+                  Hello! I am your AI Recruiter Copilot for <strong>{jobTitle}</strong>.
+                </p>
+                <p>
+                  I have analyzed the resumes of all <strong>{totalCandidates} applicants</strong> in PostgreSQL with dense semantic vectors.
+                </p>
+                <p>
+                  Ask me anything—such as:
+                </p>
+                <ul>
+                  <li><em>"Who are our strongest candidates?"</em></li>
+                  <li><em>"Does anyone have production Kubernetes experience?"</em></li>
+                  <li><em>"Who has led technical teams before?"</em></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {messages?.map((msg: CopilotMessageItem) => {
+          const isUser = msg.role === 'USER';
+          const candidates = !isUser ? extractCandidates(msg.metadata) : [];
+          const toolsCalled = msg.metadata?.tools_called || [];
+
           return (
             <div
               key={msg.id}
@@ -454,53 +360,82 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
               ) : (
                 <div className={styles.assistantBubble}>
                   <div className={styles.assistantHeader}>
-                    <FiCpu size={14} /> TalentWright Agent
+                    <FiCpu /> Senior Talent Advisor
                   </div>
+
+                  {/* Tool Call Badges */}
+                  {toolsCalled.length > 0 && (
+                    <div className={styles.toolBadgeList}>
+                      {toolsCalled.map((tool, idx) => (
+                        <span key={idx} className={styles.toolBadge}>
+                          ⚡ Executed {tool.name}
+                          {tool.arguments?.query ? `("${tool.arguments.query}")` : ''}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Text Markdown */}
                   <div className={styles.markdownContent}>
                     {renderMarkdown(msg.content)}
                   </div>
 
-                  {/* Render Suggested Direct Actions */}
-                  {msg.suggested_actions && msg.suggested_actions.length > 0 && (
-                    <div className={styles.actionsContainer}>
-                      <span className={styles.actionsLabel}>Recommended Direct Actions:</span>
-                      <div className={styles.actionsList}>
-                        {msg.suggested_actions.map((act, actIdx) => {
-                          const actionKey = `${msgIdx}-${actIdx}`;
-                          const isCopied = copiedActionIndex === actionKey;
-                          const isShortlisted = act.application_id
-                            ? shortlistedIds.has(act.application_id)
-                            : false;
+                  {/* Candidate Profile Cards */}
+                  {candidates.length > 0 && (
+                    <div className={styles.candidateCardsGrid}>
+                      {candidates.map((cand) => {
+                        const isShortlisted = shortlistedIds.has(cand.application_id);
+                        const recTier = (cand.recommendation || '').toUpperCase();
+                        let badgeClass = styles.badgeWeak;
+                        if (recTier.includes('STRONG')) badgeClass = styles.badgeStrong;
+                        else if (recTier.includes('MODERATE')) badgeClass = styles.badgeModerate;
 
-                          if (act.action_type === 'shortlist' && isShortlisted) {
-                            return (
-                              <span
-                                key={actionKey}
-                                className={`${styles.actionButton} ${styles.actionButtonSuccess}`}
-                              >
-                                <FiCheck size={12} /> {act.candidate_name || 'Candidate'} Shortlisted
+                        return (
+                          <div key={cand.application_id} className={styles.candidateCard}>
+                            <div className={styles.cardHeader}>
+                              <span className={styles.cardName}>{cand.name}</span>
+                              <span className={`${styles.cardFitBadge} ${badgeClass}`}>
+                                {cand.overall_score?.toFixed(1)}% Match • {cand.recommendation || 'Evaluated'}
                               </span>
-                            );
-                          }
+                            </div>
 
-                          return (
-                            <button
-                              key={actionKey}
-                              type="button"
-                              className={styles.actionButton}
-                              onClick={() => handleExecuteAction(act, actionKey)}
-                            >
-                              {act.action_type === 'shortlist' ? (
-                                <>⚡ {act.label}</>
-                              ) : isCopied ? (
-                                <><FiCheck size={12} /> Copied to Clipboard</>
+                            <div className={styles.cardMetaRow}>
+                              <span>App #{cand.application_id}</span>
+                              {cand.years_experience ? (
+                                <span>{cand.years_experience} Yrs Exp</span>
+                              ) : null}
+                              {cand.email && <span>{cand.email}</span>}
+                            </div>
+
+                            {/* Evidence Quote if Available */}
+                            {cand.relevant_evidence && cand.relevant_evidence.length > 0 && (
+                              <div className={styles.evidenceBox}>
+                                <div className={styles.evidenceSectionTitle}>
+                                  Verified Evidence ({cand.relevant_evidence[0].section}):
+                                </div>
+                                {cand.relevant_evidence[0].details}
+                              </div>
+                            )}
+
+                            {/* Shortlist Action */}
+                            <div className={styles.cardActionsRow}>
+                              {isShortlisted ? (
+                                <span className={styles.cardShortlistedBadge}>
+                                  <FiCheckCircle /> Shortlisted
+                                </span>
                               ) : (
-                                <><FiCopy size={12} /> {act.label}</>
+                                <button
+                                  type="button"
+                                  className={styles.cardShortlistBtn}
+                                  onClick={() => onShortlistCandidate(cand.application_id, cand.name)}
+                                >
+                                  <FiCheck /> Shortlist Candidate
+                                </button>
                               )}
-                            </button>
-                          );
-                        })}
-                      </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -509,11 +444,13 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
           );
         })}
 
-        {/* Agent Thinking Step Indicator */}
-        {copilotMutation.isPending && (
-          <div className={styles.thinkingRow}>
-            <span className={styles.thinkingSpinner} />
-            <span>AI Recruiter Agent is analyzing resumes & synthesizing recommendation...</span>
+        {/* Thinking Indicator */}
+        {sendMessageMutation.isPending && (
+          <div className={`${styles.messageRow} ${styles.assistantRow}`}>
+            <div className={styles.thinkingRow}>
+              <span className={styles.thinkingSpinner} />
+              <span>Analyzing candidate resumes and evaluating hiring fit...</span>
+            </div>
           </div>
         )}
 
@@ -525,27 +462,26 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
         <div className={styles.inputWrapper}>
           <textarea
             ref={textareaRef}
-            className={styles.chatTextarea}
-            placeholder={focusedCandidate ? `Ask anything about ${firstName}'s background or experience...` : "Ask about candidate strengths, comparisons, or talent pool insights..."}
             rows={1}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={copilotMutation.isPending}
+            placeholder="Ask about applicants, skills, experience, comparisons..."
+            className={styles.chatTextarea}
+            disabled={sendMessageMutation.isPending}
           />
           <button
             type="button"
             className={styles.sendButton}
             onClick={() => handleSendMessage()}
-            disabled={!inputValue.trim() || copilotMutation.isPending}
-            aria-label="Send query"
+            disabled={!inputValue.trim() || sendMessageMutation.isPending}
+            aria-label="Send Message"
           >
             <FiSend />
           </button>
         </div>
         <div className={styles.inputHint}>
-          <span>Press <strong>Enter</strong> to send, <strong>Shift+Enter</strong> for newline</span>
-          <span>Powered by OpenRouter</span>
+          <span>Press <strong>Enter</strong> to send, <strong>Shift + Enter</strong> for new line</span>
         </div>
       </div>
     </div>

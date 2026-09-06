@@ -1,0 +1,57 @@
+﻿name: Frontend CI
+
+on:
+  pull_request:
+    branches: ['main']
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+  push:
+    branches: ['main']
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-typecheck:
+    name: Type Check & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript & Vite Build
+        run: npm run build
+
+  docker-build:
+    name: Verify Production Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Production Docker Image (Dry run)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: prod
+          push: false
+          tags: talentwright-frontend:test

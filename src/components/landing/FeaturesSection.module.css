@@ -1,0 +1,278 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Features 6 — React Bits Pro block
+   Four feature cards with colored gradient blobs and hover arrow accents
+   ══════════════════════════════════════════════════════════════════════ */
+
+.section {
+  width: 100%;
+  background-color: #0B0B0A;
+  padding: 100px 0 120px;
+  overflow: hidden;
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Scroll Entrance Animation ── */
+
+.header,
+.card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.inView .header {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.inView .card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Header: Left-aligned with right-side switcher ── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  gap: 32px;
+}
+
+.heading {
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4.2vw, 46px);
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+  max-width: 680px;
+  margin: 0;
+}
+
+.accent {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* ── Toggle Switch ── */
+
+.toggleSwitch {
+  display: inline-flex;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 5px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.toggleOption {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.toggleOption:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toggleActive {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+/* ── 4 Cards Grid ── */
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ── Card ── */
+
+.card {
+  position: relative;
+  background-color: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 32px 28px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.3s ease,
+              opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Colored gradient blob ── */
+
+.gradientBlob {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(36px);
+  transition: opacity 0.45s ease;
+  z-index: 1;
+}
+
+.card:hover .gradientBlob {
+  opacity: 1;
+}
+
+/* ── Card Top: Icon & Hover Description ── */
+
+.cardTop {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.icon {
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  transition: color 0.3s ease;
+}
+
+.card:hover .icon {
+  color: var(--color-accent);
+}
+
+.description {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .description {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ── Card Bottom: Title & Arrow ── */
+
+.cardBottom {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.title {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: #FFFFFF;
+  letter-spacing: -0.2px;
+}
+
+.arrowButton {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  color: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              transform 0.25s ease;
+}
+
+.card:hover .arrowButton {
+  background-color: var(--hover-accent, #FFFFFF);
+  color: #FFFFFF;
+  transform: scale(1.06);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1080px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .inner {
+    padding: 0 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 72px 0 80px;
+  }
+
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    min-height: 320px;
+    padding: 28px 24px;
+  }
+
+  .heading {
+    letter-spacing: -0.8px;
+  }
+
+  .inner {
+    padding: 0 20px;
+  }
+}

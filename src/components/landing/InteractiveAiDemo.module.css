@@ -1,0 +1,313 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Showcase 6 — React Bits Pro block
+   Scrapbook studio gallery with tilted, overlapping polaroid cards
+   ══════════════════════════════════════════════════════════════════════ */
+
+.section {
+  width: 100%;
+  background-color: #0B0B0A;
+  padding: 100px 0 130px;
+  overflow: hidden;
+  position: relative;
+}
+
+.inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Scroll Entrance Animation ── */
+
+.header,
+.cardsRow {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.inView .header,
+.inView .cardsRow {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .cardsRow {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Header Row ── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 72px;
+  gap: 40px;
+}
+
+.titleColumn {
+  flex: 1;
+}
+
+.heading {
+  font-family: var(--font-heading);
+  font-size: clamp(38px, 5.5vw, 60px);
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.08;
+  letter-spacing: -1.5px;
+  margin: 0;
+}
+
+.headingMuted {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.accent {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.actionColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 400px;
+}
+
+.description {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 24px 0;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #FFFFFF;
+  color: #0B0B0A;
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 26px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              background-color 0.25s ease;
+}
+
+.ctaButton:hover {
+  background-color: #F2F2F0;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+}
+
+/* ── Overlapping Cards Gallery (Showcase 6) ── */
+
+.galleryWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 40px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+}
+
+.galleryWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.cardsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 40px 40px;
+}
+
+.card {
+  position: relative;
+  width: 290px;
+  height: 385px;
+  background-color: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  margin-left: -44px;
+  transform: rotate(var(--tilt, 0deg)) translateY(var(--offset-y, 0px));
+  transform-origin: center center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.4s ease,
+              border-color 0.4s ease;
+}
+
+.card:first-child {
+  margin-left: 0;
+}
+
+.card:hover {
+  z-index: 25 !important;
+  transform: rotate(0deg) translateY(-22px) scale(1.04);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 32px rgba(255, 255, 255, 0.06);
+}
+
+/* ── Media / Placeholder ── */
+
+.mediaContainer {
+  flex: 1;
+  background-color: #121212;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #111111 100%);
+}
+
+.radialSvg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover .radialSvg {
+  transform: scale(1.08) rotate(15deg);
+}
+
+.placeholderIconWrapper {
+  position: relative;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.card:hover .placeholderIconWrapper {
+  background: rgba(255, 255, 255, 0.09);
+  transform: scale(1.1);
+}
+
+.placeholderIcon {
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 0.3s ease;
+}
+
+.card:hover .placeholderIcon {
+  color: var(--color-accent);
+}
+
+/* ── Card Footer with Mono Captions ── */
+
+.cardFooter {
+  padding: 16px 20px 18px;
+  background-color: #171717;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cardCaption {
+  font-family: 'SF Mono', Monaco, Inconsolata, 'Fira Mono', monospace, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.85);
+  text-transform: uppercase;
+}
+
+.captionAccent {
+  color: var(--color-accent);
+}
+
+.cardSubcaption {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 4px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 980px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+    margin-bottom: 48px;
+  }
+
+  .actionColumn {
+    max-width: 100%;
+  }
+
+  .inner {
+    padding: 0 32px;
+  }
+
+  .card {
+    width: 250px;
+    height: 340px;
+    margin-left: -32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 72px 0 80px;
+  }
+
+  .inner {
+    padding: 0 20px;
+  }
+
+  .cardsRow {
+    padding: 20px 20px 30px;
+  }
+
+  .card {
+    width: 220px;
+    height: 310px;
+    margin-left: -24px;
+  }
+}

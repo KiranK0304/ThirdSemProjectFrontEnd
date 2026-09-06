@@ -1,0 +1,109 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Landing Footer — Clean & Minimalist Navigation
+   ══════════════════════════════════════════════════════════════════════ */
+
+.footer {
+  width: 100%;
+  border-top: none;
+  background-color: #0B0B0A;
+  padding: 48px 32px 36px;
+}
+
+.footerContainer {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 48px;
+  gap: 40px;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 380px;
+}
+
+.logoText {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 500;
+  color: #FFFFFF;
+  display: flex;
+  align-items: baseline;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.logoDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  margin-left: 3px;
+}
+
+.brandTagline {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  flex-wrap: wrap;
+}
+
+.navLink {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-accent);
+}
+
+.bottomRow {
+  padding-top: 16px;
+  border-top: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copyright {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 640px) {
+  .topRow {
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .navLinks {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer {
+    padding: 48px 20px 28px;
+  }
+}

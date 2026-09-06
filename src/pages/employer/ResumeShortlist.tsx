@@ -1,39 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  FiCpu, FiDownload, FiSliders, FiUsers, FiExternalLink, 
-  FiRefreshCw, FiCheckCircle, FiAlertCircle 
+  FiCpu, FiDownload, FiUsers, FiExternalLink, 
+  FiCheckCircle, FiXCircle, FiAward, FiMessageSquare,
+  FiFilter
 } from 'react-icons/fi';
-import { Button, Card, LoadingSpinner, EmptyState, Tag } from '@/components/ui';
+import { Button, LoadingSpinner, EmptyState } from '@/components/ui';
 import { useEmployerJobs } from '@/hooks/queries/useJobQueries';
-import { useEmployerJobApplicants, useUpdateApplicationStatus } from '@/hooks/queries/useApplicationQueries';
 import { 
-  useJobCriteria, 
-  useJobRanking, 
-  useRunJobRanking 
-} from '@/hooks/queries/useScreeningQueries';
-import { exportShortlistToCsv } from '@/utils/exportCsv';
+  useEmployerJobApplicants, 
+  useUpdateApplicationStatus 
+} from '@/hooks/queries/useApplicationQueries';
+import { exportApplicationsToCsv } from '@/utils/exportCsv';
 import { getMediaUrl } from '@/utils/format';
 import CopilotDrawer from '@/components/screening/CopilotDrawer';
+import { Application } from '@/api/types';
 import styles from './ResumeShortlist.module.css';
-
-const PRESETS = [
-  {
-    name: 'Balanced',
-    weights: { experience: 40, skills: 30, projects: 20, education: 10 },
-  },
-  {
-    name: 'Technical & Projects',
-    weights: { experience: 10, skills: 40, projects: 40, education: 10 },
-  },
-  {
-    name: 'Experience Heavy',
-    weights: { experience: 50, skills: 30, projects: 10, education: 10 },
-  },
-];
 
 export const ResumeShortlist: React.FC = () => {
   const { data: jobs, isLoading: isLoadingJobs } = useEmployerJobs();
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'STRONG_FIT' | 'SHORTLISTED'>('ALL');
+  const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
+  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
 
   // Auto-select first job if available
   useEffect(() => {
@@ -44,58 +32,17 @@ export const ResumeShortlist: React.FC = () => {
 
   const currentJob = jobs?.find((j) => j.id === selectedJobId);
 
-  // Criteria & Ranking Queries
-  const { data: criteriaData } = useJobCriteria(selectedJobId ?? 0);
+  // Fetch applicants for the selected job
   const { 
-    data: rankingData, 
-    isLoading: isLoadingRanking, 
-    refetch: refetchRanking 
-  } = useJobRanking(selectedJobId ?? 0);
-  const { data: applicants } = useEmployerJobApplicants(selectedJobId ?? 0);
+    data: applicants, 
+    isLoading: isLoadingApplicants, 
+    refetch: refetchApplicants 
+  } = useEmployerJobApplicants(selectedJobId ?? 0);
 
-  const runRankingMutation = useRunJobRanking();
   const updateStatusMutation = useUpdateApplicationStatus();
 
-  // Criteria State (stored as integer percentages 0-100)
-  const [weights, setWeights] = useState({
-    experience: 40,
-    skills: 30,
-    projects: 20,
-    education: 10,
-  });
-
-  const [activePreset, setActivePreset] = useState<string>('Balanced');
-  const [expandedReasons, setExpandedReasons] = useState<Record<number, boolean>>({});
-  const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
-  const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
-  const [selectedCandidateAppId, setSelectedCandidateAppId] = useState<number | null>(null);
-
-  // Sync criteria from backend when loaded
-  useEffect(() => {
-    if (criteriaData?.weights) {
-      const backendWeights = criteriaData.weights;
-      setWeights({
-        experience: Math.round((backendWeights.experience ?? 0.4) * 100),
-        skills: Math.round((backendWeights.skills ?? 0.3) * 100),
-        projects: Math.round((backendWeights.projects ?? 0.2) * 100),
-        education: Math.round((backendWeights.education ?? 0.1) * 100),
-      });
-    }
-  }, [criteriaData]);
-
-  // Map applicants for quick lookup (resume url, current status)
-  const applicantsMap = React.useMemo(() => {
-    const map = new Map<number, any>();
-    if (applicants) {
-      for (const app of applicants) {
-        map.set(app.id, app);
-      }
-    }
-    return map;
-  }, [applicants]);
-
-  // Set of shortlisted application IDs
-  const shortlistedIds = React.useMemo(() => {
+  // Shortlisted application IDs set
+  const shortlistedIds = useMemo(() => {
     const set = new Set<number>();
     if (applicants) {
       for (const app of applicants) {
@@ -107,66 +54,60 @@ export const ResumeShortlist: React.FC = () => {
     return set;
   }, [applicants]);
 
-  const totalWeight = weights.experience + weights.skills + weights.projects + weights.education;
-
-  const handleSliderChange = (criterion: keyof typeof weights, val: number) => {
-    setActivePreset('Custom');
-    setWeights((prev) => ({ ...prev, [criterion]: val }));
-  };
-
-  const handleApplyPreset = (preset: typeof PRESETS[0]) => {
-    setActivePreset(preset.name);
-    setWeights({ ...preset.weights });
-  };
-
-  const handleRunRanking = async () => {
-    if (!selectedJobId) return;
-
-    // Convert integer weights (e.g. 40) to decimals (0.4)
-    const normalizedDecimalWeights = {
-      experience: weights.experience / 100,
-      skills: weights.skills / 100,
-      projects: weights.projects / 100,
-      education: weights.education / 100,
-    };
-
-    try {
-      await runRankingMutation.mutateAsync({
-        jobId: selectedJobId,
-        weights: normalizedDecimalWeights,
-      });
-      setActionSuccessMessage('AI shortlisting and ranking completed successfully!');
-      setTimeout(() => setActionSuccessMessage(null), 4000);
-    } catch (err) {
-      console.error('Failed to run AI ranking:', err);
-    }
-  };
-
-  const handleShortlistCandidate = async (applicationId: number, candidateName?: string) => {
+  // Handle status update
+  const handleUpdateStatus = async (applicationId: number, newStatus: 'SHORTLISTED' | 'REJECTED', candidateName?: string) => {
     try {
       await updateStatusMutation.mutateAsync({
         id: applicationId,
-        status: 'SHORTLISTED',
+        status: newStatus,
       });
       setActionSuccessMessage(
         candidateName
-          ? `${candidateName} successfully marked as Shortlisted!`
-          : 'Candidate successfully marked as Shortlisted!'
+          ? `${candidateName} status updated to ${newStatus === 'SHORTLISTED' ? 'Shortlisted' : 'Rejected'}.`
+          : `Applicant #${applicationId} updated.`
       );
       setTimeout(() => setActionSuccessMessage(null), 3000);
+      refetchApplicants();
     } catch (err) {
-      console.error('Failed to shortlist candidate:', err);
+      console.error('Failed to update candidate status:', err);
     }
   };
 
   const handleExportCsv = () => {
-    if (!rankingData || !currentJob) return;
-    exportShortlistToCsv(currentJob.title, rankingData.ranked_candidates);
+    if (!applicants || !currentJob) return;
+    exportApplicationsToCsv(currentJob.title, applicants);
   };
 
-  const toggleReasonExpand = (applicationId: number) => {
-    setExpandedReasons((prev) => ({ ...prev, [applicationId]: !prev[applicationId] }));
-  };
+  // Filter & sort applicants (Strongest AI fit first)
+  const filteredApplicants = useMemo(() => {
+    if (!applicants) return [];
+    
+    // Sort by overall_score descending (nulls last)
+    const sorted = [...applicants].sort((a, b) => {
+      const scoreA = a.analysis?.overall_score ?? -1;
+      const scoreB = b.analysis?.overall_score ?? -1;
+      return scoreB - scoreA;
+    });
+
+    if (activeFilter === 'STRONG_FIT') {
+      return sorted.filter((app) => 
+        (app.analysis?.recommendation || '').toUpperCase().includes('STRONG') || 
+        (app.analysis?.overall_score ?? 0) >= 75
+      );
+    }
+    if (activeFilter === 'SHORTLISTED') {
+      return sorted.filter((app) => app.status === 'SHORTLISTED');
+    }
+    return sorted;
+  }, [applicants, activeFilter]);
+
+  const strongFitCount = useMemo(() => {
+    if (!applicants) return 0;
+    return applicants.filter((app) => 
+      (app.analysis?.recommendation || '').toUpperCase().includes('STRONG') || 
+      (app.analysis?.overall_score ?? 0) >= 75
+    ).length;
+  }, [applicants]);
 
   if (isLoadingJobs) {
     return (
@@ -182,10 +123,10 @@ export const ResumeShortlist: React.FC = () => {
         <div className={styles.header}>
           <h1 className={styles.title}>
             <span className={styles.titleIcon}><FiCpu /></span>
-            AI Resume Shortlisting
+            AI Candidate Shortlisting
           </h1>
           <p className={styles.subtitle}>
-            Screen and shortlist candidates objectively using AI criteria weights.
+            Screen and shortlist candidates objectively using automated AI resume analysis.
           </p>
         </div>
         <EmptyState 
@@ -196,8 +137,6 @@ export const ResumeShortlist: React.FC = () => {
     );
   }
 
-  const rankedCandidates = rankingData?.ranked_candidates || [];
-
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -206,11 +145,10 @@ export const ResumeShortlist: React.FC = () => {
           <div>
             <h1 className={styles.title}>
               <span className={styles.titleIcon}><FiCpu /></span>
-              AI Resume Shortlisting Agent
+              AI Candidate Shortlisting & Copilot
             </h1>
             <p className={styles.subtitle}>
-              Screen and rank applicants objectively using configurable AI evaluation criteria, 
-              then export to spreadsheet, consult the AI Copilot, or shortlist with one click.
+              Automated AI resume evaluation, candidate leaderboard, and conversational recruiter copilot.
             </p>
           </div>
 
@@ -218,13 +156,13 @@ export const ResumeShortlist: React.FC = () => {
             type="button"
             className={`${styles.copilotToggleBtn} ${isCopilotOpen ? styles.copilotToggleBtnActive : ''}`}
             onClick={() => setIsCopilotOpen((prev) => !prev)}
-            title="Toggle AI Recruiter Copilot"
+            title="Open AI Recruiter Copilot"
           >
             <FiCpu className={styles.copilotIcon} />
             <span>AI Recruiter Copilot</span>
             <span className={styles.copilotPulseDot} />
-            {rankedCandidates.length > 0 && (
-              <span className={styles.copilotBadge}>{rankedCandidates.length} evaluated</span>
+            {applicants && applicants.length > 0 && (
+              <span className={styles.copilotBadge}>{applicants.length} candidates</span>
             )}
           </button>
         </div>
@@ -232,10 +170,10 @@ export const ResumeShortlist: React.FC = () => {
 
       {actionSuccessMessage && (
         <div style={{
-          backgroundColor: 'var(--color-success-subtle)',
-          color: 'var(--color-success)',
+          backgroundColor: 'var(--color-success-subtle, #ecfdf5)',
+          color: 'var(--color-success, #10b981)',
           padding: '12px 16px',
-          borderRadius: 'var(--radius-sm)',
+          borderRadius: 'var(--radius-sm, 8px)',
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
@@ -274,91 +212,61 @@ export const ResumeShortlist: React.FC = () => {
               <span>Total Applicants:</span>
               <span className={styles.statValue}>{applicants?.length ?? 0}</span>
             </div>
-            {rankingData && (
-              <div className={styles.statBadge}>
-                <FiCheckCircle />
-                <span>Ranked Candidates:</span>
-                <span className={styles.statValue}>{rankingData.total_candidates}</span>
-              </div>
-            )}
+            <div className={styles.statBadge}>
+              <FiAward />
+              <span>Strong AI Fit:</span>
+              <span className={styles.statValue}>{strongFitCount}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <FiCheckCircle />
+              <span>Shortlisted:</span>
+              <span className={styles.statValue}>{shortlistedIds.size}</span>
+            </div>
           </div>
         </div>
 
-        {/* Criteria Tuning Section */}
-        <div className={styles.criteriaSection}>
-          <div className={styles.criteriaHeader}>
-            <div className={styles.criteriaTitle}>
-              <FiSliders />
-              <span>Scoring Weights Configuration</span>
-            </div>
-            <div className={styles.presetChips}>
-              {PRESETS.map((p) => (
-                <button
-                  key={p.name}
-                  type="button"
-                  className={`${styles.presetChip} ${activePreset === p.name ? styles.presetChipActive : ''}`}
-                  onClick={() => handleApplyPreset(p)}
-                >
-                  {p.name}
-                </button>
-              ))}
-            </div>
+        {/* Filter Chips Bar */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: '16px',
+          borderTop: '1px solid var(--color-border, #e5e7eb)',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              type="button"
+              className={`${styles.presetChip} ${activeFilter === 'ALL' ? styles.presetChipActive : ''}`}
+              onClick={() => setActiveFilter('ALL')}
+            >
+              All Applicants ({applicants?.length ?? 0})
+            </button>
+            <button
+              type="button"
+              className={`${styles.presetChip} ${activeFilter === 'STRONG_FIT' ? styles.presetChipActive : ''}`}
+              onClick={() => setActiveFilter('STRONG_FIT')}
+            >
+              🌟 Strong Fit ({strongFitCount})
+            </button>
+            <button
+              type="button"
+              className={`${styles.presetChip} ${activeFilter === 'SHORTLISTED' ? styles.presetChipActive : ''}`}
+              onClick={() => setActiveFilter('SHORTLISTED')}
+            >
+              ✅ Shortlisted ({shortlistedIds.size})
+            </button>
           </div>
 
-          <div className={styles.weightsGrid}>
-            {(['experience', 'skills', 'projects', 'education'] as const).map((crit) => (
-              <div key={crit} className={styles.weightItem}>
-                <div className={styles.weightLabelRow}>
-                  <span className={styles.weightLabel}>{crit}</span>
-                  <span className={styles.weightPercent}>{weights[crit]}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={weights[crit]}
-                  onChange={(e) => handleSliderChange(crit, Number(e.target.value))}
-                  className={styles.weightSlider}
-                />
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.actionsRow}>
-            <div className={styles.weightStatus}>
-              Total Weights: <strong>{totalWeight}%</strong>
-              {totalWeight !== 100 && (
-                <span className={styles.weightWarning}>
-                  {' '}(Will be automatically normalized to 100%)
-                </span>
-              )}
-            </div>
-
-            <div className={styles.ctaButtons}>
-              {rankingData && (
-                <Button
-                  variant="secondary"
-                  onClick={() => refetchRanking()}
-                  disabled={isLoadingRanking}
-                >
-                  <FiRefreshCw /> Refresh Snapshot
-                </Button>
-              )}
-              <Button
-                variant="primary"
-                onClick={handleRunRanking}
-                disabled={runRankingMutation.isPending || !selectedJobId || (applicants?.length ?? 0) === 0}
-              >
-                {runRankingMutation.isPending ? (
-                  <span className={styles.evaluatingSpinner}>
-                    <LoadingSpinner size="sm" /> Evaluating Resumes...
-                  </span>
-                ) : (
-                  <>⚡ Run AI Shortlisting</>
-                )}
-              </Button>
-            </div>
+          <div>
+            <Button
+              variant="secondary"
+              onClick={handleExportCsv}
+              disabled={!applicants || applicants.length === 0}
+            >
+              <FiDownload /> Export to CSV
+            </Button>
           </div>
         </div>
       </div>
@@ -367,213 +275,184 @@ export const ResumeShortlist: React.FC = () => {
       <div className={styles.resultsSection}>
         <div className={styles.resultsHeader}>
           <div className={styles.resultsTitleArea}>
-            <h2 className={styles.resultsHeading}>Ranked Candidate Shortlist</h2>
+            <h2 className={styles.resultsHeading}>Candidate Leaderboard</h2>
             <span className={styles.resultsCount}>
-              {rankedCandidates.length} evaluated
+              {filteredApplicants.length} showing
             </span>
-          </div>
-
-          <div>
-            <Button
-              variant="secondary"
-              onClick={handleExportCsv}
-              disabled={rankedCandidates.length === 0}
-            >
-              <FiDownload /> Export to CSV
-            </Button>
           </div>
         </div>
 
-        {runRankingMutation.isPending ? (
-          <div className={styles.emptyCard}>
-            <LoadingSpinner size="lg" />
-            <h3 className={styles.emptyTitle}>AI Agent Evaluating Resumes...</h3>
-            <p className={styles.emptyDesc}>
-              The AI recruiter is analyzing PDF resumes against job requirements, 
-              evaluating individual criteria, and calculating composite scores.
+        {isLoadingApplicants ? (
+          <div style={{ padding: '48px', textAlign: 'center' }}>
+            <LoadingSpinner size="md" />
+            <p style={{ marginTop: '12px', color: 'var(--color-text-secondary)' }}>
+              Loading candidate applications...
             </p>
           </div>
-        ) : rankedCandidates.length === 0 ? (
-          <div className={styles.emptyCard}>
-            <FiAlertCircle size={40} className={styles.emptyIcon} />
-            <h3 className={styles.emptyTitle}>No Ranking Snapshot Found</h3>
-            <p className={styles.emptyDesc}>
-              {(applicants?.length ?? 0) === 0
-                ? 'There are currently no applicant submissions for this job posting.'
-                : 'Click "Run AI Shortlisting" above to evaluate candidates and generate the leaderboard table.'}
-            </p>
-            {(applicants?.length ?? 0) > 0 && (
-              <Button variant="primary" onClick={handleRunRanking}>
-                ⚡ Run AI Shortlisting Now
-              </Button>
-            )}
+        ) : filteredApplicants.length === 0 ? (
+          <div style={{ padding: '32px' }}>
+            <EmptyState
+              title={activeFilter === 'ALL' ? "No applicants yet" : "No matching candidates"}
+              description={activeFilter === 'ALL' ? "Candidates who apply will be analyzed and scored automatically." : "Try switching to the 'All Applicants' filter."}
+            />
           </div>
         ) : (
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ width: '60px' }}>Rank</th>
-                  <th style={{ minWidth: '200px' }}>Candidate</th>
-                  <th style={{ minWidth: '150px' }}>Overall Match</th>
-                  <th style={{ minWidth: '220px' }}>Criteria Breakdown</th>
-                  <th style={{ minWidth: '280px' }}>AI Evidence & Notes</th>
-                  <th style={{ width: '130px' }}>Action</th>
+                  <th>Rank & Candidate</th>
+                  <th>AI Fit Score</th>
+                  <th>Key Skills</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {rankedCandidates.map((candidate) => {
-                  const applicantInfo = applicantsMap.get(candidate.application_id);
-                  const isShortlisted = applicantInfo?.status === 'SHORTLISTED';
-                  const isExpanded = expandedReasons[candidate.application_id];
-                  const resumeUrl = applicantInfo?.resume?.file_url;
+                {filteredApplicants.map((app: Application, index: number) => {
+                  const name = app.seeker?.user_name || app.seeker?.user_email || `Applicant #${app.id}`;
+                  const email = app.seeker?.user_email || '';
+                  const analysis = app.analysis;
+                  const score = analysis?.overall_score != null ? analysis.overall_score : null;
+                  const rec = (analysis?.recommendation || '').toUpperCase();
+                  const isShortlisted = app.status === 'SHORTLISTED';
+                  const isRejected = app.status === 'REJECTED';
 
-                  // Get color class for overall score
-                  const scoreClass =
-                    candidate.final_score >= 80
-                      ? styles.scoreHigh
-                      : candidate.final_score >= 60
-                      ? styles.scoreMid
-                      : styles.scoreLow;
-
-                  // Aggregate reasons
-                  const reasonsList = Object.entries(candidate.criteria_details || {});
+                  let badgeClass = styles.badgeWeak;
+                  if (rec.includes('STRONG') || (score ?? 0) >= 75) badgeClass = styles.badgeStrong;
+                  else if (rec.includes('MODERATE') || (score ?? 0) >= 50) badgeClass = styles.badgeModerate;
 
                   return (
-                    <tr key={candidate.application_id}>
-                      {/* Rank */}
+                    <tr key={app.id}>
+                      {/* Candidate Column */}
                       <td>
-                        <span
-                          className={`${styles.rankBadge} ${
-                            candidate.rank === 1
-                              ? styles.topRank1
-                              : candidate.rank === 2
-                              ? styles.topRank2
-                              : candidate.rank === 3
-                              ? styles.topRank3
-                              : ''
-                          }`}
-                        >
-                          {candidate.rank}
+                        <div className={styles.candidateCol}>
+                          <span className={styles.rankNum}>#{index + 1}</span>
+                          <div>
+                            <div className={styles.candidateName}>{name}</div>
+                            <div className={styles.candidateEmail}>
+                              {email}
+                              {analysis?.total_years_experience != null && (
+                                <span style={{ marginLeft: '6px', color: 'var(--color-text-muted)' }}>
+                                  • {analysis.total_years_experience} yrs exp
+                                </span>
+                              )}
+                            </div>
+                            {app.resume && (
+                              <a
+                                href={getMediaUrl(app.resume.file_url || app.resume.file)}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.resumeLink}
+                              >
+                                <FiExternalLink /> View Resume PDF
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* AI Fit Score Column */}
+                      <td>
+                        {score != null ? (
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                {score.toFixed(1)}%
+                              </span>
+                              <span className={`${styles.cardFitBadge} ${badgeClass}`}>
+                                {analysis?.recommendation || 'Analyzed'}
+                              </span>
+                            </div>
+                            <div style={{
+                              width: '100px',
+                              height: '5px',
+                              backgroundColor: 'var(--color-surface-muted, #e5e7eb)',
+                              borderRadius: '3px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${Math.min(100, Math.max(0, score))}%`,
+                                height: '100%',
+                                backgroundColor: score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#9ca3af',
+                                borderRadius: '3px'
+                              }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                            {analysis?.status === 'PROCESSING' ? 'Analyzing...' : 'Ready'}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Skills Column */}
+                      <td>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '280px' }}>
+                          {(analysis?.skills || []).slice(0, 5).map((skill: string, idx: number) => (
+                            <span
+                              key={idx}
+                              style={{
+                                fontSize: '11px',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                backgroundColor: 'var(--color-surface-muted, #f3f4f6)',
+                                border: '1px solid var(--color-border, #e5e7eb)',
+                                color: 'var(--color-text-primary, #374151)'
+                              }}
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                          {(!analysis?.skills || analysis.skills.length === 0) && (
+                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>—</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status Column */}
+                      <td>
+                        <span className={`${styles.statusBadge} ${
+                          isShortlisted ? styles.statusShortlisted : isRejected ? styles.statusRejected : styles.statusPending
+                        }`}>
+                          {app.status}
                         </span>
                       </td>
 
-                      {/* Candidate */}
-                      <td>
-                        <div className={styles.candidateCell}>
+                      {/* Actions Column */}
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                           <button
                             type="button"
-                            className={styles.candidateNameButton}
-                            onClick={() => {
-                              setSelectedCandidateAppId(candidate.application_id);
-                              setIsCopilotOpen(true);
-                            }}
-                            title={`Focus ${candidate.candidate_name} in AI Copilot`}
+                            className={styles.rowCopilotBtn}
+                            onClick={() => setIsCopilotOpen(true)}
+                            title="Chat with AI Copilot about this candidate"
                           >
-                            {candidate.candidate_name || 'Applicant'}
+                            <FiMessageSquare /> Copilot
                           </button>
-                          <span className={styles.candidateEmail}>
-                            {candidate.candidate_email}
-                          </span>
-                          {resumeUrl && (
-                            <a
-                              href={getMediaUrl(resumeUrl)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.resumeLink}
-                            >
-                              <FiExternalLink size={12} /> View Resume PDF
-                            </a>
-                          )}
-                        </div>
-                      </td>
 
-                      {/* Overall Match Score */}
-                      <td>
-                        <div className={styles.scoreCell}>
-                          <div className={styles.scoreNumber}>
-                            {candidate.final_score.toFixed(1)}%
-                            <span className={styles.scoreMax}>match</span>
-                          </div>
-                          <div className={styles.scoreProgressBar}>
-                            <div
-                              className={`${styles.scoreProgressFill} ${scoreClass}`}
-                              style={{ width: `${Math.min(100, Math.max(0, candidate.final_score))}%` }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Criteria Breakdown */}
-                      <td>
-                        <div className={styles.breakdownGrid}>
-                          {Object.entries(candidate.criteria_scores || {}).map(([crit, score]) => (
-                            <span key={crit} className={styles.breakdownBadge}>
-                              {crit.substring(0, 4)}: <strong>{score}</strong>
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-
-                      {/* AI Recruiter Notes */}
-                      <td>
-                        <div className={styles.reasonCell}>
-                          {reasonsList.length > 0 ? (
-                            <div>
-                              {isExpanded ? (
-                                <div>
-                                  {reasonsList.map(([crit, detail]) => (
-                                    <div key={crit} style={{ marginBottom: '6px' }}>
-                                      <strong style={{ textTransform: 'capitalize' }}>{crit}:</strong>{' '}
-                                      {detail.reason}
-                                    </div>
-                                  ))}
-                                  <button
-                                    type="button"
-                                    className={styles.reasonToggle}
-                                    onClick={() => toggleReasonExpand(candidate.application_id)}
-                                  >
-                                    Show less
-                                  </button>
-                                </div>
-                              ) : (
-                                <div>
-                                  <span>{reasonsList[0][1].reason}</span>
-                                  {reasonsList.length > 1 && (
-                                    <button
-                                      type="button"
-                                      className={styles.reasonToggle}
-                                      onClick={() => toggleReasonExpand(candidate.application_id)}
-                                    >
-                                      + View {reasonsList.length - 1} more criteria notes
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span style={{ color: 'var(--color-text-muted)' }}>
-                              No detailed notes available.
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td>
-                        <div className={styles.actionCell}>
-                          {isShortlisted ? (
-                            <span className={styles.shortlistedBadge}>
-                              <FiCheckCircle /> Shortlisted
-                            </span>
-                          ) : (
-                            <Button
-                              variant="secondary"
-                              onClick={() => handleShortlistCandidate(candidate.application_id, candidate.candidate_name)}
+                          {!isShortlisted && (
+                            <button
+                              type="button"
+                              className={styles.actionBtnShortlist}
+                              onClick={() => handleUpdateStatus(app.id, 'SHORTLISTED', name)}
                               disabled={updateStatusMutation.isPending}
+                              title="Shortlist Candidate"
                             >
-                              Shortlist
-                            </Button>
+                              <FiCheckCircle /> Shortlist
+                            </button>
+                          )}
+
+                          {!isRejected && (
+                            <button
+                              type="button"
+                              className={styles.actionBtnReject}
+                              onClick={() => handleUpdateStatus(app.id, 'REJECTED', name)}
+                              disabled={updateStatusMutation.isPending}
+                              title="Reject Candidate"
+                            >
+                              <FiXCircle />
+                            </button>
                           )}
                         </div>
                       </td>
@@ -586,29 +465,21 @@ export const ResumeShortlist: React.FC = () => {
         )}
       </div>
 
-      {/* Unified AI Recruiter Copilot Single Slide-Over Drawer */}
-      {isCopilotOpen && (
-        <>
-          <div
-            className={styles.drawerOverlay}
-            onClick={() => setIsCopilotOpen(false)}
-            aria-label="Close copilot overlay"
-          />
-          <div className={styles.drawerWrapper}>
+      {/* Slide-Over Drawer Overlay & Panel */}
+      {isCopilotOpen && currentJob && (
+        <div className={styles.drawerOverlay} onClick={() => setIsCopilotOpen(false)}>
+          <div className={styles.drawerWrapper} onClick={(e) => e.stopPropagation()}>
             <CopilotDrawer
-              jobId={selectedJobId ?? 0}
-              jobTitle={currentJob?.title || 'Selected Job'}
-              totalCandidates={rankedCandidates.length}
-              candidates={rankedCandidates}
-              selectedCandidateAppId={selectedCandidateAppId}
-              onSelectCandidate={setSelectedCandidateAppId}
+              jobId={currentJob.id}
+              jobTitle={currentJob.title}
+              totalCandidates={applicants?.length ?? 0}
               isOpen={isCopilotOpen}
               onClose={() => setIsCopilotOpen(false)}
-              onShortlistCandidate={handleShortlistCandidate}
+              onShortlistCandidate={(appId, name) => handleUpdateStatus(appId, 'SHORTLISTED', name)}
               shortlistedIds={shortlistedIds}
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

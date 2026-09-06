@@ -1,0 +1,207 @@
+/* ══════════════════════════════════════════════════════════════════════
+   CTA Section — Minimalist with Colossal Silhouette Brand Typography
+   ══════════════════════════════════════════════════════════════════════ */
+
+.ctaSection {
+  width: 100%;
+  background-color: #0B0B0A;
+  padding: 90px 32px 40px;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  border-top: none;
+}
+
+/* ── Framing Corner Marks ── */
+
+.corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(217, 119, 6, 0.35);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.cornerTL {
+  top: 24px;
+  left: 24px;
+  border-width: 1px 0 0 1px;
+}
+
+.cornerTR {
+  top: 24px;
+  right: 24px;
+  border-width: 1px 1px 0 0;
+}
+
+.cornerBL {
+  bottom: 24px;
+  left: 24px;
+  border-width: 0 0 1px 1px;
+}
+
+.cornerBR {
+  bottom: 24px;
+  right: 24px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ── Scroll Entrance Animation ── */
+
+.ctaTop,
+.brandWrapper {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.inView .ctaTop {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.inView .brandWrapper {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.12s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaTop,
+  .brandWrapper {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Center Content: Button & Attractive Description ── */
+
+.ctaTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+  margin-top: 16px;
+}
+
+.ctaButton {
+  background-color: #FFFFFF;
+  color: #0B0B0A;
+  border: none;
+  border-radius: 12px;
+  padding: 15px 44px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.25s ease,
+              transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+}
+
+.ctaButton:hover {
+  background-color: #F0F0EE;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.2);
+}
+
+.description {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.48);
+  margin-top: 18px;
+  letter-spacing: -0.1px;
+}
+
+/* ── Giant Brand Typography with Full Descender Clearance ── */
+
+.brandWrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  user-select: none;
+  pointer-events: none;
+  margin-top: 56px;
+  padding-bottom: 12px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(217, 119, 6, 0.08) 0%, transparent 65%);
+}
+
+.brandHeading {
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.brandText {
+  font-family: var(--font-heading);
+  font-size: clamp(64px, 15vw, 200px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(255, 255, 255, 0.12) 65%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+  display: inline-block;
+}
+
+.brandDot {
+  display: inline-block;
+  width: clamp(10px, 2vw, 26px);
+  height: clamp(10px, 2vw, 26px);
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  margin-left: clamp(6px, 1.2vw, 16px);
+  box-shadow: 0 0 24px rgba(217, 119, 6, 0.45);
+  flex-shrink: 0;
+  align-self: baseline;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .ctaSection {
+    padding: 72px 20px 32px;
+    min-height: 400px;
+  }
+
+  .corner {
+    width: 10px;
+    height: 10px;
+  }
+
+  .cornerTL { top: 16px; left: 16px; }
+  .cornerTR { top: 16px; right: 16px; }
+  .cornerBL { bottom: 16px; left: 16px; }
+  .cornerBR { bottom: 16px; right: 16px; }
+
+  .ctaButton {
+    padding: 13px 34px;
+    font-size: 14px;
+  }
+
+  .description {
+    font-size: 13px;
+    margin-top: 14px;
+  }
+
+  .brandWrapper {
+    margin-top: 40px;
+  }
+}

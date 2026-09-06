@@ -125,6 +125,17 @@ export interface ApplicationSeeker {
   updated_at: string
 }
 
+export interface CandidateAnalysisSummary {
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  overall_score: number | null
+  recommendation: 'STRONG_FIT' | 'MODERATE_FIT' | 'WEAK_FIT' | string
+  summary: string
+  skills: string[]
+  total_years_experience: number
+  strengths: string[]
+  concerns: string[]
+}
+
 export interface Application {
   id: number
   job: Job
@@ -132,6 +143,7 @@ export interface Application {
   resume: Resume | null
   cover_letter: string
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'OFFERED' | 'REJECTED' | 'WITHDRAWN'
+  analysis?: CandidateAnalysisSummary | null
   created_at: string
   updated_at: string
 }
@@ -297,4 +309,60 @@ export interface CopilotRequest {
 export interface CopilotResponse {
   reply: string
   suggested_actions: CopilotAction[]
+}
+
+// ── Modern Modular Recruiter Copilot Types ──────────────────────────────────
+
+export interface CopilotSession {
+  id: number
+  job_id: number
+  title: string
+  message_count: number
+  created_at: string
+  updated_at: string
+}
+
+export interface CopilotToolCall {
+  name: string
+  arguments: Record<string, any>
+}
+
+export interface CopilotEvidenceExcerpt {
+  section: string
+  details: string
+}
+
+export interface CopilotCandidateProfile {
+  application_id: number
+  name: string
+  email: string
+  overall_score: number
+  recommendation: string
+  years_experience?: number
+  skills?: string[]
+  key_skills?: string[]
+  summary?: string
+  strengths?: string[]
+  concerns?: string[]
+  relevant_evidence?: CopilotEvidenceExcerpt[]
+}
+
+export interface CopilotMessageMetadata {
+  tools_called?: CopilotToolCall[]
+  candidates?: CopilotCandidateProfile[] | Record<string, any>
+  error?: string
+}
+
+export interface CopilotMessageItem {
+  id: number
+  role: 'USER' | 'ASSISTANT' | 'SYSTEM'
+  content: string
+  metadata: CopilotMessageMetadata
+  created_at: string
+}
+
+export interface SendMessageResponse {
+  session_id: number
+  user_message: CopilotMessageItem
+  assistant_message: CopilotMessageItem
 }
