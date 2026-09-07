@@ -118,6 +118,111 @@ const renderMarkdown = (text: string) => {
   return elements;
 };
 
+// Friendly status label mapper for tool executions (hiding internal query/mechanics)
+const getToolFriendlyLabel = (toolName: string): string => {
+  const normalized = (toolName || '').toLowerCase();
+  if (normalized.includes('search')) {
+    return 'Searching candidates...';
+  }
+  if (normalized.includes('top') || normalized.includes('get') || normalized.includes('detail')) {
+    return 'Fetching candidate details...';
+  }
+  return 'Reviewing candidate records...';
+};
+
+interface CollapsibleCandidateAnalysisProps {
+  candidates: CopilotCandidateProfile[];
+  shortlistedIds: Set<number>;
+  onShortlistCandidate: (applicationId: number, candidateName?: string) => Promise<void> | void;
+}
+
+const CollapsibleCandidateAnalysis: React.FC<CollapsibleCandidateAnalysisProps> = ({
+  candidates,
+  shortlistedIds,
+  onShortlistCandidate,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!candidates || candidates.length === 0) return null;
+
+  return (
+    <div className={styles.candidateAnalysisSection}>
+      <button
+        type="button"
+        className={styles.candidateAnalysisToggle}
+        onClick={() => setIsExpanded((prev) => !prev)}
+        aria-expanded={isExpanded}
+      >
+        <span className={styles.candidateAnalysisTitle}>
+          Candidate Analysis ({candidates.length})
+        </span>
+        <span className={styles.candidateAnalysisArrow}>
+          {isExpanded ? '▴' : '▾'}
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className={styles.candidateCardsGrid}>
+          {candidates.map((cand) => {
+            const isShortlisted = shortlistedIds.has(cand.application_id);
+            const recTier = (cand.recommendation || '').toUpperCase();
+            let badgeClass = styles.badgeWeak;
+            if (recTier.includes('STRONG')) badgeClass = styles.badgeStrong;
+            else if (recTier.includes('MODERATE')) badgeClass = styles.badgeModerate;
+
+            return (
+              <div key={cand.application_id} className={styles.candidateCard}>
+                <div className={styles.cardHeader}>
+                  <span className={styles.cardName}>{cand.name}</span>
+                  <span className={`${styles.cardFitBadge} ${badgeClass}`}>
+                    {cand.overall_score != null ? `${cand.overall_score.toFixed(1)}% Match • ` : ''}
+                    {cand.recommendation || 'Evaluated'}
+                  </span>
+                </div>
+
+                <div className={styles.cardMetaRow}>
+                  <span>App #{cand.application_id}</span>
+                  {cand.years_experience ? (
+                    <span>{cand.years_experience} Yrs Exp</span>
+                  ) : null}
+                  {cand.email && <span>{cand.email}</span>}
+                </div>
+
+                {/* Evidence Quote if Available */}
+                {cand.relevant_evidence && cand.relevant_evidence.length > 0 && (
+                  <div className={styles.evidenceBox}>
+                    <div className={styles.evidenceSectionTitle}>
+                      Verified Evidence ({cand.relevant_evidence[0].section}):
+                    </div>
+                    {cand.relevant_evidence[0].details}
+                  </div>
+                )}
+
+                {/* Shortlist Action */}
+                <div className={styles.cardActionsRow}>
+                  {isShortlisted ? (
+                    <span className={styles.cardShortlistedBadge}>
+                      <FiCheckCircle /> Shortlisted
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.cardShortlistBtn}
+                      onClick={() => onShortlistCandidate(cand.application_id, cand.name)}
+                    >
+                      <FiCheck /> Shortlist Candidate
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
   jobId,
   jobTitle,
@@ -366,10 +471,9 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
                   {/* Tool Call Badges */}
                   {toolsCalled.length > 0 && (
                     <div className={styles.toolBadgeList}>
-                      {toolsCalled.map((tool, idx) => (
+                      {Array.from(new Set(toolsCalled.map((tool) => getToolFriendlyLabel(tool.name)))).map((label, idx) => (
                         <span key={idx} className={styles.toolBadge}>
-                          ⚡ Executed {tool.name}
-                          {tool.arguments?.query ? `("${tool.arguments.query}")` : ''}
+                          <FiSearch className={styles.toolBadgeIcon} /> {label}
                         </span>
                       ))}
                     </div>
@@ -380,63 +484,13 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
                     {renderMarkdown(msg.content)}
                   </div>
 
-                  {/* Candidate Profile Cards */}
+                  {/* Collapsible Candidate Analysis */}
                   {candidates.length > 0 && (
-                    <div className={styles.candidateCardsGrid}>
-                      {candidates.map((cand) => {
-                        const isShortlisted = shortlistedIds.has(cand.application_id);
-                        const recTier = (cand.recommendation || '').toUpperCase();
-                        let badgeClass = styles.badgeWeak;
-                        if (recTier.includes('STRONG')) badgeClass = styles.badgeStrong;
-                        else if (recTier.includes('MODERATE')) badgeClass = styles.badgeModerate;
-
-                        return (
-                          <div key={cand.application_id} className={styles.candidateCard}>
-                            <div className={styles.cardHeader}>
-                              <span className={styles.cardName}>{cand.name}</span>
-                              <span className={`${styles.cardFitBadge} ${badgeClass}`}>
-                                {cand.overall_score?.toFixed(1)}% Match • {cand.recommendation || 'Evaluated'}
-                              </span>
-                            </div>
-
-                            <div className={styles.cardMetaRow}>
-                              <span>App #{cand.application_id}</span>
-                              {cand.years_experience ? (
-                                <span>{cand.years_experience} Yrs Exp</span>
-                              ) : null}
-                              {cand.email && <span>{cand.email}</span>}
-                            </div>
-
-                            {/* Evidence Quote if Available */}
-                            {cand.relevant_evidence && cand.relevant_evidence.length > 0 && (
-                              <div className={styles.evidenceBox}>
-                                <div className={styles.evidenceSectionTitle}>
-                                  Verified Evidence ({cand.relevant_evidence[0].section}):
-                                </div>
-                                {cand.relevant_evidence[0].details}
-                              </div>
-                            )}
-
-                            {/* Shortlist Action */}
-                            <div className={styles.cardActionsRow}>
-                              {isShortlisted ? (
-                                <span className={styles.cardShortlistedBadge}>
-                                  <FiCheckCircle /> Shortlisted
-                                </span>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className={styles.cardShortlistBtn}
-                                  onClick={() => onShortlistCandidate(cand.application_id, cand.name)}
-                                >
-                                  <FiCheck /> Shortlist Candidate
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <CollapsibleCandidateAnalysis
+                      candidates={candidates}
+                      shortlistedIds={shortlistedIds}
+                      onShortlistCandidate={onShortlistCandidate}
+                    />
                   )}
                 </div>
               )}
@@ -449,7 +503,7 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
           <div className={`${styles.messageRow} ${styles.assistantRow}`}>
             <div className={styles.thinkingRow}>
               <span className={styles.thinkingSpinner} />
-              <span>Analyzing candidate resumes and evaluating hiring fit...</span>
+              <span>Finding relevant candidates...</span>
             </div>
           </div>
         )}
