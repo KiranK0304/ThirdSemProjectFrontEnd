@@ -1,15 +1,40 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   applyToJobApi, getSeekerApplicationsApi, getSeekerApplicationApi, 
   withdrawApplicationApi, getJobApplicantsApi, getEmployerApplicationsApi, 
   updateApplicationStatusApi, getSeekerInterviewsApi
 } from '../../api/applications';
+import type { Application } from '../../api/types';
 
-export const useSeekerApplications = () => {
+export const useSeekerApplications = (enabled = true) => {
   return useQuery({
     queryKey: ['seeker', 'applications'],
     queryFn: () => getSeekerApplicationsApi(),
+    enabled,
   });
+};
+
+export const useSeekerAppliedMap = (enabled = true) => {
+  const { data: applications = [], isLoading } = useSeekerApplications(enabled);
+
+  const appliedMap = useMemo(() => {
+    const map = new Map<number, Application>();
+    applications.forEach((app) => {
+      if (app.job?.id && app.status !== 'WITHDRAWN') {
+        map.set(app.job.id, app);
+      }
+    });
+    return map;
+  }, [applications]);
+
+  return {
+    applications,
+    appliedMap,
+    isLoading,
+    isApplied: (jobId: number) => appliedMap.has(jobId),
+    getApplicationForJob: (jobId: number) => appliedMap.get(jobId),
+  };
 };
 
 export const useSeekerApplication = (id: number) => {

@@ -253,6 +253,19 @@
   }
 }
 
+@media (max-width: 768px) {
+  .description {
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    margin-top: 8px;
+  }
+
+  .gradientBlob {
+    opacity: 0.5 !important;
+  }
+}
+
 @media (max-width: 640px) {
   .section {
     padding: 72px 0 80px;
@@ -264,15 +277,28 @@
   }
 
   .card {
-    min-height: 320px;
-    padding: 28px 24px;
+    min-height: auto;
+    padding: 24px 20px;
   }
 
   .heading {
     letter-spacing: -0.8px;
+    font-size: 28px;
   }
 
   .inner {
-    padding: 0 20px;
+    padding: 0 16px;
+  }
+
+  .toggleSwitch {
+    width: 100%;
+    display: flex;
+  }
+
+  .toggleOption {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }

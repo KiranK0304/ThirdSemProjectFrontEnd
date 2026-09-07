@@ -53,7 +53,11 @@ export const Jobs: React.FC = () => {
       ) : (
         <div className={styles.jobsGrid}>
           {jobs.map((job: any) => (
-            <Card key={job.id} className={styles.jobCard}>
+            <Card 
+              key={job.id} 
+              className={styles.jobCard}
+              onClick={() => navigate(`/employer/jobs/${job.id}`)}
+            >
               <div className={styles.jobHeader}>
                 <h3 className={styles.jobTitle}>{job.title}</h3>
                 <Tag variant={getJobStatusVariant(job.status)}>{job.status}</Tag>
@@ -62,12 +66,24 @@ export const Jobs: React.FC = () => {
                 <div>{job.location} • {formatEmploymentType(job.employment_type)}</div>
                 <div style={{ marginTop: '4px' }}>Posted: {formatDate(job.created_at)}</div>
               </div>
-              <div className={styles.actions}>
-                <Button variant="ghost" onClick={() => navigate(`/employer/jobs/${job.id}/edit`)}>
+              <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => navigate(`/employer/jobs/${job.id}`)}
+                >
+                  View Details
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate(`/employer/jobs/${job.id}/edit`)}
+                >
                   Edit
                 </Button>
-                <Button variant="secondary" onClick={() => navigate(`/employer/jobs/${job.id}/applicants`)}>
-                  View Applicants
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(`/employer/jobs/${job.id}/applicants`)}
+                >
+                  Applicants
                 </Button>
               </div>
             </Card>

@@ -2,8 +2,6 @@ import { api } from './client';
 import {
   EmployerJobFilters,
   Job,
-  JobAlert,
-  JobAlertInput,
   JobFilters,
   SavedJob,
   RecommendedJob,
@@ -57,33 +55,6 @@ export const saveJobApi = async (jobId: number): Promise<SavedJob> => {
 
 export const unsaveJobApi = async (jobId: number): Promise<void> => {
   await api.delete(`/api/jobs/${jobId}/save/`);
-};
-
-export const getJobAlertsApi = async (): Promise<JobAlert[]> => {
-  const response = await api.get<JobAlert[]>('/api/jobs/alerts/');
-  return response.data;
-};
-
-export const createJobAlertApi = async (data: JobAlertInput): Promise<JobAlert> => {
-  const response = await api.post<JobAlert>('/api/jobs/alerts/', data);
-  return response.data;
-};
-
-export const updateJobAlertApi = async (
-  id: number,
-  data: JobAlertInput,
-): Promise<JobAlert> => {
-  const response = await api.patch<JobAlert>(`/api/jobs/alerts/${id}/`, data);
-  return response.data;
-};
-
-export const deleteJobAlertApi = async (id: number): Promise<void> => {
-  await api.delete(`/api/jobs/alerts/${id}/`);
-};
-
-export const getJobAlertMatchesApi = async (id: number): Promise<Job[]> => {
-  const response = await api.get<Job[]>(`/api/jobs/alerts/${id}/matches/`);
-  return response.data;
 };
 
 export const getRecommendedJobsApi = async (): Promise<RecommendedJob[]> => {

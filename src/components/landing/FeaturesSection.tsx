@@ -30,14 +30,14 @@ const seekerFeatures: FeatureCardItem[] = [
     accentColor: '#a855f7',
   },
   {
-    icon: <FiMessageSquare size={22} />,
-    title: 'Direct Recruiter Chat',
-    text: 'Bypass automated gatekeepers. Chat directly with engineering leaders who already reviewed your craft.',
+    icon: <FiCompass size={22} />,
+    title: 'Smart Match Engine',
+    text: 'Find verified roles precisely tailored to your skills, compensation targets, and domain expertise.',
     blobColor: 'rgba(59, 130, 246, 0.5)',
     accentColor: '#3b82f6',
   },
   {
-    icon: <FiCompass size={22} />,
+    icon: <FiBox size={22} />,
     title: 'Salary Transparency',
     text: 'Upfront compensation benchmarks, equity packages, and remote policies on every single opening.',
     blobColor: 'rgba(245, 158, 11, 0.5)',
@@ -77,7 +77,7 @@ const employerFeatures: FeatureCardItem[] = [
   {
     icon: <FiGrid size={22} />,
     title: 'Pipeline Management',
-    text: 'Manage job postings, applicant stages, direct candidate chats, and shortlist decisions in one place.',
+    text: 'Manage job postings, applicant stages, structured evaluations, and shortlist decisions in one place.',
     blobColor: 'rgba(16, 185, 129, 0.5)',
     accentColor: '#10b981',
   },

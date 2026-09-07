@@ -11,3 +11,4 @@ export * from './ErrorState';
 export * from './LoadingSpinner';
 export * from './FormField';
 export { CompanyAvatar } from './CompanyAvatar';
+export * from './ConfirmModal';

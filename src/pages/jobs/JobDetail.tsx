@@ -1,30 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { Button, Tag, Modal, TextArea, Select, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui'
+import { Button, Tag, Modal, TextArea, Select, EmptyState, ErrorState, LoadingSpinner, CompanyAvatar, Card } from '@/components/ui'
 import { useAuth } from '@/context/AuthContext'
 import { useJob } from '@/hooks/queries/useJobQueries'
-import { useApplyToJob } from '@/hooks/queries/useApplicationQueries'
+import { useApplyToJob, useSeekerAppliedMap } from '@/hooks/queries/useApplicationQueries'
 import { useResumes, useUploadResume } from '@/hooks/queries/useResumeQueries'
 import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { extractApiError } from '@/api/utils'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
-import { formatEmploymentType } from '@/utils/format'
-import { FiUploadCloud, FiFileText, FiAlertCircle } from 'react-icons/fi'
+import { formatEmploymentType, formatStatus, getApplicationStatusVariant } from '@/utils/format'
+import { FiUploadCloud, FiFileText, FiAlertCircle, FiArrowLeft, FiMapPin, FiExternalLink, FiClock } from 'react-icons/fi'
 import styles from './JobDetail.module.css'
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
-  
+
   const jobId = Number(id)
   const { data: job, isLoading: jobLoading, isError: jobIsError, error: jobError, refetch: refetchJob } = useJob(jobId)
+  const { isApplied, getApplicationForJob } = useSeekerAppliedMap(user?.account_type === 'SEEKER')
   const { data: resumesData, isLoading: resumesLoading } = useResumes()
-  
+
   const applyMutation = useApplyToJob()
-  
   const uploadResumeMutation = useUploadResume()
-  
+
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false)
   const [coverLetter, setCoverLetter] = useState('')
   const [selectedResume, setSelectedResume] = useState('')
@@ -39,7 +39,7 @@ export default function JobDetail() {
   useEffect(() => {
     if (resumes.length > 0) {
       if (!selectedResume) {
-        const primary = resumes.find(r => r.is_primary) || resumes[0]
+        const primary = resumes.find((r) => r.is_primary) || resumes[0]
         if (primary) {
           setSelectedResume(primary.id.toString())
         }
@@ -50,14 +50,20 @@ export default function JobDetail() {
     }
   }, [resumes, resumesLoading, selectedResume])
 
-  if (jobLoading) return <div className={styles.container}><LoadingSpinner /></div>
-  
+  if (jobLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <LoadingSpinner size="lg" />
+      </div>
+    )
+  }
+
   if (jobIsError) {
     return (
       <div className={styles.container}>
-        <ErrorState 
-          message={jobError instanceof Error ? jobError.message : "Failed to load job"} 
-          onRetry={() => refetchJob()} 
+        <ErrorState
+          message={jobError instanceof Error ? jobError.message : 'Failed to load job details'}
+          onRetry={() => refetchJob()}
         />
       </div>
     )
@@ -66,12 +72,19 @@ export default function JobDetail() {
   if (!job) {
     return (
       <div className={styles.container}>
-        <EmptyState title="Job not found" description="The job you are looking for does not exist." />
+        <EmptyState title="Job not found" description="The job you are looking for does not exist or has been removed." />
       </div>
     )
   }
 
+  const isJobApplied = job ? isApplied(job.id) : false
+  const existingApplication = job ? getApplicationForJob(job.id) : undefined
+
   const handleApply = async () => {
+    if (isJobApplied) {
+      setApplyError('You have already applied for this job.')
+      return
+    }
     setApplyError(null)
     setIsSubmitting(true)
 
@@ -121,57 +134,111 @@ export default function JobDetail() {
     const baseTitle = r.title || `Resume ${r.id}`
     return {
       value: r.id.toString(),
-      label: isMain ? `${baseTitle} (Main)` : baseTitle,
+      label: isMain ? `${baseTitle} (Default)` : baseTitle,
     }
   })
 
+  const companyName = job.employer?.company_name || 'Hiring Company'
+  const salary = formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'USD')
+
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>{job.title}</h1>
-        
-        <div className={styles.companyInfo}>
-          <h2 className={styles.companyName}>{job.employer?.company_name}</h2>
-          {job.employer?.website && (
-            <a href={job.employer.website} target="_blank" rel="noopener noreferrer" className={styles.companyLink}>
-              {job.employer.website}
-            </a>
-          )}
+      <Link to="/jobs" className={styles.backLink}>
+        <FiArrowLeft size={16} />
+        <span>Back to All Jobs</span>
+      </Link>
+
+      <Card className={styles.headerCard}>
+        <div className={styles.headerTop}>
+          <div className={styles.companyInfo}>
+            <CompanyAvatar name={companyName} size={64} />
+            <div>
+              <h1 className={styles.title}>{job.title}</h1>
+              <div className={styles.companyMeta}>
+                <span className={styles.companyName}>{companyName}</span>
+                {job.location && (
+                  <>
+                    <span className={styles.metaDot}>•</span>
+                    <span className={styles.metaItem}>
+                      <FiMapPin size={13} />
+                      <span>{job.location}</span>
+                    </span>
+                  </>
+                )}
+                {job.employer?.website && (
+                  <>
+                    <span className={styles.metaDot}>•</span>
+                    <a
+                      href={job.employer.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.companySiteLink}
+                    >
+                      <span>Website</span>
+                      <FiExternalLink size={12} />
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.headerActions}>
+            <SaveJobButton jobId={job.id} />
+            {isJobApplied && existingApplication ? (
+              <div className={styles.appliedActionGroup}>
+                <Tag variant={getApplicationStatusVariant(existingApplication.status)}>
+                  Applied · {formatStatus(existingApplication.status)}
+                </Tag>
+                <Link to={`/seeker/applications/${existingApplication.id}`}>
+                  <Button variant="secondary">View Application</Button>
+                </Link>
+              </div>
+            ) : (
+              <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+                Apply Now
+              </Button>
+            )}
+          </div>
         </div>
-        
-        <div className={styles.tags}>
+
+        <div className={styles.tagsRow}>
+          {isJobApplied && <Tag variant="success">Applied</Tag>}
           <Tag variant="neutral">{formatEmploymentType(job.employment_type)}</Tag>
-          <Tag variant="neutral">{job.location}</Tag>
-          {(job.salary_min || job.salary_max) && (
-            <Tag variant="amber">{formatSalary(job.salary_min, job.salary_max, job.salary_currency || 'USD')}</Tag>
-          )}
+          {salary && <Tag variant="neutral">{salary}</Tag>}
+          <span className={styles.postedDate}>
+            <FiClock size={12} />
+            <span>Posted {formatRelativeTime(job.created_at)}</span>
+          </span>
         </div>
-      </div>
-      
-      <div className={styles.description}>
-        {job.description}
-      </div>
-      
-      <div className={styles.footer}>
-        <span className={styles.postedDate}>Posted {formatRelativeTime(job.created_at)}</span>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          {user?.account_type === 'SEEKER' && job.employer?.id && (
-            <Button 
-              variant="secondary" 
-              onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
-            >
-              Message Employer
+      </Card>
+
+      <Card className={styles.bodyCard}>
+        <h2 className={styles.sectionTitle}>Job Description & Requirements</h2>
+        <div className={styles.descriptionText}>
+          {job.description}
+        </div>
+
+        <div className={styles.footerRow}>
+          {isJobApplied && existingApplication ? (
+            <div className={styles.appliedActionGroup}>
+              <Tag variant={getApplicationStatusVariant(existingApplication.status)}>
+                Applied · {formatStatus(existingApplication.status)}
+              </Tag>
+              <Link to={`/seeker/applications/${existingApplication.id}`}>
+                <Button variant="secondary">View Application</Button>
+              </Link>
+            </div>
+          ) : (
+            <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+              Apply Now
             </Button>
           )}
-          <SaveJobButton jobId={job.id} />
-          <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
-            Apply Now
-          </Button>
         </div>
-      </div>
+      </Card>
 
-      <Modal 
-        open={isApplyModalOpen} 
+      <Modal
+        open={isApplyModalOpen}
         onClose={() => {
           setIsApplyModalOpen(false)
           setApplyError(null)
@@ -180,28 +247,31 @@ export default function JobDetail() {
       >
         {!user ? (
           <div className={styles.signInMessage}>
-            <p>Please sign in to apply for this position.</p>
-            <Link to="/login" className={styles.signInLink}>Go to Sign In</Link>
+            <p>Please sign in to submit your application for this role.</p>
+            <Link to="/auth?mode=login" className={styles.signInLink}>
+              <Button variant="primary">Sign In to Apply</Button>
+            </Link>
           </div>
         ) : user.account_type === 'EMPLOYER' ? (
           <div className={styles.signInMessage}>
-            <p>Employers cannot apply for jobs. Please log in as a job seeker.</p>
+            <p>Employer accounts cannot submit job applications. Please sign in as a job seeker.</p>
           </div>
         ) : (
           <div className={styles.applyForm}>
             {applyError && (
               <div className={styles.errorBanner}>
-                <FiAlertCircle /> {applyError}
+                <FiAlertCircle size={16} />
+                <span>{applyError}</span>
               </div>
             )}
-            
+
             {resumesLoading ? (
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div className={styles.modalLoading}>
                 <LoadingSpinner size="md" />
               </div>
             ) : (
               <>
-                {/* If user has existing resumes, show toggle between Saved and Upload New */}
+                {/* If user has existing resumes, show toggle */}
                 {resumes.length > 0 && resumes.length < 3 && (
                   <div className={styles.modeToggle}>
                     <button
@@ -209,14 +279,16 @@ export default function JobDetail() {
                       className={`${styles.modeBtn} ${applyMode === 'saved' ? styles.modeBtnActive : ''}`}
                       onClick={() => setApplyMode('saved')}
                     >
-                      <FiFileText /> Saved Resumes ({resumes.length})
+                      <FiFileText size={14} />
+                      <span>Saved Resumes ({resumes.length})</span>
                     </button>
                     <button
                       type="button"
                       className={`${styles.modeBtn} ${applyMode === 'upload' ? styles.modeBtnActive : ''}`}
                       onClick={() => setApplyMode('upload')}
                     >
-                      <FiUploadCloud /> Upload New Resume
+                      <FiUploadCloud size={14} />
+                      <span>Upload New File</span>
                     </button>
                   </div>
                 )}
@@ -224,18 +296,18 @@ export default function JobDetail() {
                 {/* Mode 1: Select from saved resumes */}
                 {applyMode === 'saved' && resumes.length > 0 && (
                   <Select
-                    label="Select Resume *"
+                    label="Choose Resume *"
                     value={selectedResume}
                     onChange={(e) => setSelectedResume(e.target.value)}
-                    options={[{ value: '', label: 'Choose a resume...' }, ...resumeOptions]}
+                    options={[{ value: '', label: 'Select a saved resume...' }, ...resumeOptions]}
                   />
                 )}
 
-                {/* Mode 2: Direct file upload (or automatic if no resumes exist) */}
+                {/* Mode 2: Direct file upload */}
                 {(applyMode === 'upload' || resumes.length === 0) && (
                   <div className={styles.uploadBox}>
-                    <label style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
-                      Upload Resume File *
+                    <label className={styles.uploadBoxLabel}>
+                      Attach Resume Document *
                     </label>
                     <input
                       type="file"
@@ -250,24 +322,24 @@ export default function JobDetail() {
                       className={styles.fileInput}
                     />
                     <span className={styles.uploadHint}>
-                      Accepted formats: PDF, DOC, DOCX (Max 5MB). This will be saved to your profile and attached to this application.
+                      Accepted formats: PDF, DOC, DOCX (Max 5MB). File will be saved to your candidate profile.
                     </span>
                   </div>
                 )}
               </>
             )}
-            
+
             <TextArea
-              label="Cover Letter (Optional)"
+              label="Cover Note / Pitch (Optional)"
               value={coverLetter}
               onChange={(e) => setCoverLetter(e.target.value)}
               rows={4}
-              placeholder="Why are you a good fit for this role?"
+              placeholder="Highlight relevant experience, passion for the company, or notable achievements..."
             />
-            
+
             <div className={styles.modalActions}>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => {
                   setIsApplyModalOpen(false)
                   setApplyError(null)
@@ -276,9 +348,9 @@ export default function JobDetail() {
               >
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
-                onClick={handleApply} 
+              <Button
+                variant="primary"
+                onClick={handleApply}
                 disabled={
                   isSubmitting ||
                   (applyMode === 'saved' && resumes.length > 0 && !selectedResume) ||
@@ -286,7 +358,7 @@ export default function JobDetail() {
                 }
                 loading={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                {isSubmitting ? 'Submitting Application...' : 'Submit Application'}
               </Button>
             </div>
           </div>
@@ -295,3 +367,4 @@ export default function JobDetail() {
     </div>
   )
 }
+

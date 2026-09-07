@@ -2,12 +2,12 @@ import { useState } from 'react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications, useUnreadNotificationCount } from '@/hooks/queries/useNotificationQueries'
-import { Button, Avatar } from '@/components/ui'
+import { Button, Avatar, ConfirmModal } from '@/components/ui'
 import styles from './Layout.module.css'
 
 import { 
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
-  FiUser, FiBriefcase, FiEdit, FiSettings, 
+  FiBriefcase, FiEdit, 
   FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell,
   FiShield, FiBookmark, FiCpu
 } from 'react-icons/fi'
@@ -17,12 +17,14 @@ export function AppLayout() {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const { data: notifications = [] } = useNotifications(!!user)
   const { data: unreadCount = 0 } = useUnreadNotificationCount(!!user)
   const markRead = useMarkNotificationRead()
   const markAllRead = useMarkAllNotificationsRead()
 
   const handleLogout = async () => {
+    setShowLogoutConfirm(false)
     await logout()
     navigate('/login')
   }
@@ -41,12 +43,6 @@ export function AppLayout() {
     if (relatedUrl) navigate(relatedUrl)
   }
 
-  const getInitials = (name?: string, email?: string) => {
-    if (name) return name.substring(0, 2).toUpperCase()
-    if (email) return email.substring(0, 2).toUpperCase()
-    return 'U'
-  }
-
   const navLinks = [
     // Admin links (for staff/superuser)
     ...(user?.is_staff ? [
@@ -57,26 +53,22 @@ export function AppLayout() {
       { to: '/seeker/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
       { to: '/seeker/saved-jobs', label: 'Saved Jobs', icon: <FiBookmark /> },
-      { to: '/seeker/job-alerts', label: 'Job Alerts', icon: <FiBell /> },
       { to: '/seeker/applications', label: 'My Applications', icon: <FiFileText /> },
-      { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
-      { to: '/seeker/profile', label: 'Profile', icon: <FiUser /> },
     ] : []),
     ...(user?.account_type === 'EMPLOYER' ? [
       { to: '/employer/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/employer/jobs', label: 'My Jobs', icon: <FiBriefcase /> },
       { to: '/employer/shortlist', label: 'AI Shortlist', icon: <FiCpu /> },
       { to: '/employer/jobs/new', label: 'Post a Job', icon: <FiEdit /> },
-      { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
-      { to: '/employer/profile', label: 'Company Profile', icon: <FiBriefcase /> },
     ] : []),
     ...(!user ? [
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
       { to: '/login', label: 'Sign In', icon: <FiLogIn /> },
       { to: '/register', label: 'Register', icon: <FiUserPlus /> },
     ] : []),
-    { to: '/settings', label: 'Settings', icon: <FiSettings /> }
   ]
+
+  const profilePath = user?.account_type === 'SEEKER' ? '/seeker/profile' : '/employer/profile'
 
   return (
     <div className={styles.appLayout}>
@@ -104,7 +96,13 @@ export function AppLayout() {
         </nav>
 
         {user && (
-          <div className={styles.userInfo} onClick={handleLogout} title="Log out">
+          <div 
+            className={styles.userInfo} 
+            onClick={() => setShowLogoutConfirm(true)} 
+            title="Click to sign out"
+            role="button"
+            tabIndex={0}
+          >
             <Avatar 
               name={user.name || user.email || 'User'} 
               size={32}
@@ -126,17 +124,9 @@ export function AppLayout() {
       <div className={styles.mainWrapper}>
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <button className={styles.hamburger} onClick={toggleMobileMenu}>
+            <button className={styles.hamburger} onClick={toggleMobileMenu} aria-label="Toggle menu">
               <FiMenu size={24} />
             </button>
-            <div className={styles.searchContainer}>
-              <span className={styles.searchIcon}><FiSearch /></span>
-              <input 
-                type="text" 
-                placeholder="Search jobs, companies, skills..." 
-                className={styles.searchInput}
-              />
-            </div>
           </div>
 
           <div className={styles.headerRight}>
@@ -181,13 +171,13 @@ export function AppLayout() {
                     )}
                   </div>
                 )}
-                <div className={styles.headerAvatar}>
+                <Link to={profilePath} className={styles.headerAvatarLink} title="View Profile">
                   <Avatar 
                     name={user.name || user.email || 'User'} 
-                    size={32}
+                    size={34}
                     round
                   />
-                </div>
+                </Link>
               </>
             )}
             {!user && (
@@ -202,6 +192,18 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        open={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Sign Out"
+        description="Are you sure you want to sign out of your Hirely account?"
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   )
 }
@@ -209,12 +211,20 @@ export function AppLayout() {
 export function GuestLayout() {
   return (
     <div className={styles.guestLayout}>
-      <div className={styles.guestCard}>
-        <div className={styles.guestLogo}>
+      <div className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
+      <div className={`${styles.corner} ${styles.cornerTR}`} aria-hidden="true" />
+      <div className={`${styles.corner} ${styles.cornerBL}`} aria-hidden="true" />
+      <div className={`${styles.corner} ${styles.cornerBR}`} aria-hidden="true" />
+
+      <header className={styles.guestHeader}>
+        <Link to="/" className={styles.guestBrandLogo} title="Return to Hirely home">
           Hirely<span className={styles.guestLogoDot}></span>
-        </div>
+        </Link>
+      </header>
+
+      <main className={styles.guestMain}>
         <Outlet />
-      </div>
+      </main>
     </div>
   )
 }

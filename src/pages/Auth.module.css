@@ -1,0 +1,317 @@
+/* ══════════════════════════════════════════════════════════════════════
+   Auth — Floating Form Elements (No Container / No Card Background)
+   Ultra-Pure Editorial Minimalist Floating Experience
+   Mobile & Retina High-Clarity Optimizations
+   ══════════════════════════════════════════════════════════════════════ */
+
+.flipPerspective {
+  perspective: 1400px;
+  width: 100%;
+  max-width: 390px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.flipCard {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  transform-style: preserve-3d;
+  transition: transform 0.75s cubic-bezier(0.34, 1.25, 0.64, 1);
+  position: relative;
+}
+
+.isFlipped {
+  transform: rotateY(180deg);
+}
+
+/* ── Floating Faces (Front & Back — Crisp GPU Rasterization) ── */
+
+.cardFace {
+  grid-area: 1 / 1 / 2 / 2;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 8px 0;
+  box-shadow: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0); /* Forces clean GPU layer rendering on high-DPI/mobile */
+  display: flex;
+  flex-direction: column;
+}
+
+.frontFace {
+  transform: rotateY(0deg) translate3d(0, 0, 0);
+}
+
+.backFace {
+  transform: rotateY(180deg) translate3d(0, 0, 0);
+}
+
+/* ── Header ── */
+
+.header {
+  margin-bottom: 22px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 500;
+  color: #FFFFFF;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.accent {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* ── Minimal 36px Floating Role Switcher (Back Face) ── */
+
+.roleBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.rolePill {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 12px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.rolePill:hover {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.rolePillActive {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  border: 1px solid rgba(217, 119, 6, 0.45);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.rolePillActive svg {
+  color: var(--color-accent);
+}
+
+/* ── High-Clarity Floating Form Inputs ── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 9px;
+  padding: 12px 14px 12px 42px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #FFFFFF;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.input::placeholder {
+  color: rgba(255, 255, 255, 0.46);
+}
+
+.input:focus {
+  border-color: var(--color-accent);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+}
+
+.inputError {
+  border-color: rgba(239, 68, 68, 0.6) !important;
+}
+
+.fieldErrorText {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: #F87171;
+  margin-top: 2px;
+  padding-left: 4px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  z-index: 1;
+}
+
+.eyeBtn:hover {
+  color: #FFFFFF;
+}
+
+/* ── Error Banner ── */
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: #F87171;
+  line-height: 1.4;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+}
+
+/* ── Floating Primary Submit Action ── */
+
+.submitBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 20px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s ease,
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #B45309;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(217, 119, 6, 0.3);
+  text-decoration: none;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Floating Footer Link (triggers 3D Flip) ── */
+
+.footer {
+  margin-top: 20px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.footerText {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.flipLink {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.flipLink:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* ── Mobile Screen Clarity Adjustments ── */
+@media (max-width: 640px) {
+  .flipPerspective {
+    max-width: 100%;
+    padding: 0 4px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  /* 16px font size prevents iOS Safari from auto-zooming and blurring the page */
+  .input {
+    font-size: 16px;
+    padding: 13px 14px 13px 42px;
+  }
+
+  .submitBtn {
+    padding: 13px 20px;
+    font-size: 14px;
+  }
+}

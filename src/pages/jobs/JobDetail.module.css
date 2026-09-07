@@ -1,183 +1,291 @@
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px;
 }
 
-.header {
+.loadingContainer {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
 }
 
-.title {
-  font-family: 'Fraunces', serif;
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 500;
-  font-size: 32px;
-  line-height: 1.2;
-  color: var(--color-text-primary);
-  margin: 0;
+  color: var(--color-text-secondary, #9ca3af);
+  text-decoration: none;
+  margin-bottom: 24px;
+  transition: color 0.15s ease;
+}
+
+.backLink:hover {
+  color: var(--color-accent, #d97706);
+}
+
+.headerCard {
+  padding: 28px;
+  background: var(--color-surface, #141414);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .companyInfo {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-display, inherit);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.companyMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  font-size: 14px;
+  color: var(--color-text-secondary, #9ca3af);
 }
 
 .companyName {
-  font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: 18px;
-  color: var(--color-text-primary);
-  margin: 0;
+  color: var(--color-text-primary, #e5e7eb);
 }
 
-.companyLink {
-  color: var(--color-accent);
+.metaDot {
+  color: var(--color-border, rgba(255, 255, 255, 0.2));
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.companySiteLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-accent, #d97706);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 13px;
 }
 
-.companyLink:hover {
+.companySiteLink:hover {
   text-decoration: underline;
 }
 
-.tags {
+.headerActions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.description {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--color-text-primary);
-  margin-bottom: 32px;
-  white-space: pre-wrap;
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-top: 24px;
-  border-top: 1px solid var(--color-border);
+  gap: 12px;
+}
+
+.appliedActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tagsRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.06));
 }
 
 .postedDate {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 13px;
-  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #6b7280);
+  margin-left: auto;
 }
 
-.applyForm {
+.bodyCard {
+  padding: 32px 28px;
+  background: var(--color-surface, #141414);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+}
+
+.sectionTitle {
+  font-family: var(--font-display, inherit);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
+  margin: 0 0 18px;
+}
+
+.descriptionText {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-text-secondary, #d1d5db);
+  white-space: pre-wrap;
+  margin-bottom: 36px;
+}
+
+.footerRow {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.06));
 }
 
 .signInMessage {
   text-align: center;
   padding: 24px 0;
+  color: var(--color-text-secondary, #9ca3af);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
 .signInLink {
-  color: var(--color-accent);
   text-decoration: none;
 }
 
-.signInLink:hover {
-  text-decoration: underline;
+.applyForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modalLoading {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: var(--color-danger, #f87171);
+  font-size: 13px;
+}
+
+.modeToggle {
+  display: flex;
+  background: var(--color-surface-muted, #1a1a1a);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.modeBtn {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary, #9ca3af);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.modeBtnActive {
+  background: var(--color-surface, #141414);
+  color: var(--color-text-primary, #ffffff);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
+}
+
+.uploadBox {
+  border: 1px dashed var(--color-border, rgba(255, 255, 255, 0.2));
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--color-surface-muted, #1a1a1a);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.uploadBoxLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary, #ffffff);
+}
+
+.fileInput {
+  font-size: 13px;
+  color: var(--color-text-secondary, #9ca3af);
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #6b7280);
 }
 
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 24px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border, rgba(255, 255, 255, 0.06));
 }
 
-.modeToggle {
-  display: flex;
-  background-color: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 3px;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.modeBtn {
-  flex: 1;
-  padding: 8px 12px;
-  background: none;
-  border: none;
-  border-radius: calc(var(--radius-sm) - 2px);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.modeBtnActive {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.uploadBox {
-  border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
-  padding: 20px;
-  background-color: var(--color-surface-muted);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.fileInput {
-  display: block;
-  width: 100%;
-  font-size: 13px;
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-
-.uploadHint {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.errorBanner {
-  background-color: var(--color-danger-subtle);
-  color: var(--color-danger);
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 24px;
+@media (max-width: 640px) {
+  .container {
+    padding: 20px 16px;
   }
-  
-  .footer {
+
+  .headerTop {
     flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .postedDate {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .footerRow {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

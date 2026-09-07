@@ -115,7 +115,7 @@ export default function InteractiveAiDemo() {
                       >
                         {/* Radial sector spokes */}
                         <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                        <line x1="10" y1="100" x2="190" y2="100" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                        <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
                         <line x1="36" y1="36" x2="164" y2="164" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
                         <line x1="36" y1="164" x2="164" y2="36" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
 

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { Button, Card, Input, TextArea, Modal, LoadingSpinner } from '@/components/ui'
+import { Button, Card, Input, TextArea, ConfirmModal, LoadingSpinner, CompanyAvatar } from '@/components/ui'
 import { useUpdateProfile } from '@/hooks/queries/useAuthQueries'
 import {
   useResumes,
@@ -11,7 +11,7 @@ import {
 import { formatRelativeTime } from '@/utils/date'
 import { getMediaUrl } from '@/utils/format'
 import { extractApiError } from '@/api/utils'
-import { FiFileText, FiExternalLink, FiTrash2, FiCheckCircle, FiStar } from 'react-icons/fi'
+import { FiFileText, FiExternalLink, FiTrash2, FiCheckCircle, FiStar, FiUser, FiUploadCloud, FiAlertCircle } from 'react-icons/fi'
 import type { Resume } from '@/api/types'
 import styles from './Profile.module.css'
 
@@ -51,8 +51,8 @@ export default function Profile() {
         name,
         seeker_profile: { phone, bio },
       } as any)
-      setProfileSuccess('Profile updated.')
-      setTimeout(() => setProfileSuccess(''), 3000)
+      setProfileSuccess('Profile saved successfully.')
+      setTimeout(() => setProfileSuccess(''), 3500)
     } catch (err) {
       setProfileError(extractApiError(err))
     }
@@ -60,15 +60,18 @@ export default function Profile() {
 
   const handleUpload = async () => {
     const file = fileRef.current?.files?.[0]
-    if (!file) return
+    if (!file) {
+      setUploadError('Please choose a file to upload.')
+      return
+    }
     setUploadError('')
     setResumeSuccessMsg('')
     try {
-      await uploadResume.mutateAsync({ file, title: resumeTitle || undefined })
+      await uploadResume.mutateAsync({ file, title: resumeTitle.trim() || undefined })
       setResumeTitle('')
       if (fileRef.current) fileRef.current.value = ''
       setResumeSuccessMsg('Resume uploaded successfully.')
-      setTimeout(() => setResumeSuccessMsg(''), 3000)
+      setTimeout(() => setResumeSuccessMsg(''), 3500)
     } catch (err) {
       setUploadError(extractApiError(err))
     }
@@ -79,8 +82,8 @@ export default function Profile() {
     setResumeSuccessMsg('')
     try {
       await setPrimaryResume.mutateAsync(resumeId)
-      setResumeSuccessMsg('Main resume updated.')
-      setTimeout(() => setResumeSuccessMsg(''), 3000)
+      setResumeSuccessMsg('Default resume updated.')
+      setTimeout(() => setResumeSuccessMsg(''), 3500)
     } catch (err) {
       setUploadError(extractApiError(err))
     } finally {
@@ -95,70 +98,110 @@ export default function Profile() {
       await deleteResume.mutateAsync(deleteTarget.id)
       setDeleteTarget(null)
       setResumeSuccessMsg('Resume deleted.')
-      setTimeout(() => setResumeSuccessMsg(''), 3000)
+      setTimeout(() => setResumeSuccessMsg(''), 3500)
     } catch (err) {
       setDeleteError(extractApiError(err))
     }
   }
 
   return (
-    <div className={styles.page}>
-      <h1>My Profile</h1>
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Candidate Profile</h1>
+        <p className={styles.subtitle}>
+          Manage your personal details, public bio, and active resumes for fast job applications.
+        </p>
+      </div>
 
-      {/* Profile form */}
-      <Card className={styles.profileCard}>
+      {/* User Identity card & form */}
+      <Card className={styles.sectionCard}>
+        <div className={styles.cardHeader}>
+          <div className={styles.userBadge}>
+            <div className={styles.avatar}>
+              {(user?.name || user?.email || 'U')[0].toUpperCase()}
+            </div>
+            <div>
+              <h2 className={styles.cardTitle}>{user?.name || 'Job Seeker'}</h2>
+              <span className={styles.userEmail}>{user?.email}</span>
+            </div>
+          </div>
+        </div>
+
         <form className={styles.form} onSubmit={handleProfileSave}>
-          <Input
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <Input
-            label="Phone"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="+1234567890"
-          />
+          <div className={styles.formGrid}>
+            <Input
+              label="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Alex Morgan"
+              required
+            />
+            <Input
+              label="Phone Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+1 (555) 000-0000"
+            />
+          </div>
+
           <TextArea
-            label="Bio"
+            label="Professional Bio / Summary"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
-            placeholder="Tell employers about yourself..."
+            placeholder="Summarize your key skills, experience level, and what roles you are seeking..."
           />
+
           <div className={styles.formActions}>
             <Button
               variant="primary"
               type="submit"
               loading={updateProfile.isPending}
             >
-              Save Changes
+              Save Profile Changes
             </Button>
-            {profileSuccess && <span className={styles.successMsg}>{profileSuccess}</span>}
-            {profileError && <span className={styles.errorMsg}>{profileError}</span>}
+            {profileSuccess && (
+              <div className={styles.successAlert}>
+                <FiCheckCircle size={14} />
+                <span>{profileSuccess}</span>
+              </div>
+            )}
+            {profileError && (
+              <div className={styles.errorAlert}>
+                <FiAlertCircle size={14} />
+                <span>{profileError}</span>
+              </div>
+            )}
           </div>
         </form>
       </Card>
 
       {/* Resumes section */}
-      <Card>
+      <Card className={styles.sectionCard}>
         <div className={styles.resumeHeader}>
-          <h2>Resumes</h2>
-          <span className={styles.resumeCount}>{resumes.length} of 3</span>
+          <div>
+            <h2 className={styles.cardTitle}>Uploaded Resumes</h2>
+            <p className={styles.cardSubtitle}>
+              You can store up to 3 versions of your resume and set a default for quick 1-click applications.
+            </p>
+          </div>
+          <span className={styles.resumeCountBadge}>{resumes.length} / 3</span>
         </div>
 
         {resumeSuccessMsg && (
-          <div className={styles.resumeSuccess}>
+          <div className={styles.successAlert}>
             <FiCheckCircle size={14} />
             <span>{resumeSuccessMsg}</span>
           </div>
         )}
 
         {resumesLoading ? (
-          <LoadingSpinner size="md" />
+          <div className={styles.loadingBox}>
+            <LoadingSpinner size="md" />
+          </div>
         ) : (
           <>
-            {resumes.length > 0 && (
+            {resumes.length > 0 ? (
               <div className={styles.resumeList}>
                 {resumes.map((resume) => {
                   const isPrimary = resume.is_primary || resumes.length === 1
@@ -171,7 +214,7 @@ export default function Profile() {
                     >
                       <div className={styles.resumeLeft}>
                         <div className={styles.fileIconWrapper}>
-                          <FiFileText size={20} />
+                          <FiFileText size={22} />
                         </div>
                         <div className={styles.resumeInfo}>
                           <div className={styles.titleRow}>
@@ -182,11 +225,11 @@ export default function Profile() {
                               className={styles.resumeTitleLink}
                               title="Click to view resume in new tab"
                             >
-                              {resume.title}
+                              {resume.title || 'Untitled Resume'}
                             </a>
                             {isPrimary && (
                               <span className={styles.primaryBadge}>
-                                <FiCheckCircle size={12} /> Main Resume
+                                <FiCheckCircle size={12} /> Default
                               </span>
                             )}
                           </div>
@@ -211,20 +254,22 @@ export default function Profile() {
                             className={styles.btnAction}
                             title="Open resume in new tab"
                           >
-                            <FiExternalLink size={14} /> View
+                            <FiExternalLink size={13} />
+                            <span>View</span>
                           </Button>
                         </a>
 
                         {!isPrimary && resumes.length > 1 && (
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
                             onClick={() => handleSetPrimary(resume.id)}
                             loading={setPrimaryResume.isPending && pendingPrimaryId === resume.id}
                             className={styles.btnAction}
-                            title="Make this your primary default resume"
+                            title="Make this your default resume"
                           >
-                            <FiStar size={14} /> Set as Main
+                            <FiStar size={13} />
+                            <span>Set Default</span>
                           </Button>
                         )}
 
@@ -235,79 +280,83 @@ export default function Profile() {
                           onClick={() => setDeleteTarget(resume)}
                           title="Delete this resume"
                         >
-                          <FiTrash2 size={14} /> Delete
+                          <FiTrash2 size={13} />
+                          <span>Delete</span>
                         </Button>
                       </div>
                     </div>
                   )
                 })}
               </div>
+            ) : (
+              <div className={styles.noResumesMsg}>
+                No resumes uploaded yet. Add a PDF or DOCX file below to apply for open roles.
+              </div>
             )}
 
             {resumes.length < 3 ? (
-              <div className={styles.uploadForm}>
-                <Input
-                  label="Resume title (optional)"
-                  value={resumeTitle}
-                  onChange={(e) => setResumeTitle(e.target.value)}
-                  placeholder="e.g. Backend Developer Resume"
-                />
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className={styles.fileInput}
-                />
-                <span className={styles.uploadHint}>Supported formats: PDF, DOC, DOCX (Max 5MB)</span>
-                <div className={styles.uploadActions}>
-                  <Button
-                    variant="secondary"
-                    onClick={handleUpload}
-                    loading={uploadResume.isPending}
-                  >
-                    Upload Resume
-                  </Button>
-                  {uploadError && <span className={styles.errorMsg}>{uploadError}</span>}
+              <div className={styles.uploadSection}>
+                <h3 className={styles.uploadTitle}>
+                  <FiUploadCloud size={18} />
+                  <span>Upload New Resume</span>
+                </h3>
+                <div className={styles.uploadForm}>
+                  <Input
+                    label="Resume Label / Title (Optional)"
+                    value={resumeTitle}
+                    onChange={(e) => setResumeTitle(e.target.value)}
+                    placeholder="e.g. Senior Frontend Engineer - 2026"
+                  />
+                  <div className={styles.fileInputWrapper}>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      className={styles.fileInput}
+                    />
+                    <span className={styles.uploadHint}>Supported formats: PDF, DOC, DOCX (Max 5MB)</span>
+                  </div>
+                  <div className={styles.uploadActions}>
+                    <Button
+                      variant="secondary"
+                      onClick={handleUpload}
+                      loading={uploadResume.isPending}
+                    >
+                      <FiUploadCloud size={14} />
+                      <span>Upload Resume</span>
+                    </Button>
+                    {uploadError && (
+                      <div className={styles.errorAlert}>
+                        <FiAlertCircle size={14} />
+                        <span>{uploadError}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className={styles.maxNote}>
-                Maximum 3 resumes reached. Delete one to upload a new one.
-              </p>
+              <div className={styles.maxNote}>
+                Maximum 3 resumes reached. You can delete an existing one to upload a replacement.
+              </div>
             )}
           </>
         )}
       </Card>
 
       {/* Delete confirmation modal */}
-      <Modal
+      <ConfirmModal
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
-        title="Delete resume?"
-        actions={
-          <>
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
-              Cancel
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDelete}
-              loading={deleteResume.isPending}
-            >
-              Delete
-            </Button>
-          </>
-        }
-      >
-        <p>
-          Are you sure you want to delete <strong>{deleteTarget?.title}</strong>?
-        </p>
-        <p style={{ marginTop: '8px', color: 'var(--color-text-secondary)', fontSize: '13px' }}>
-          This resume will be permanently deleted. Applications that used it will no longer have an attached file.
-        </p>
-        {deleteError && <p className={styles.errorMsg}>{deleteError}</p>}
-      </Modal>
+        onConfirm={handleDelete}
+        title="Delete Resume?"
+        description={`Are you sure you want to delete "${deleteTarget?.title || 'this resume'}"? This action cannot be reversed.`}
+        confirmText="Delete Resume"
+        cancelText="Keep"
+        variant="danger"
+        loading={deleteResume.isPending}
+      />
     </div>
   )
 }
+
 

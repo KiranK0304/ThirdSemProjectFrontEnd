@@ -6,8 +6,7 @@ import { LoadingSpinner } from '@/components/ui'
 
 // Pages
 import Landing from '@/pages/Landing'
-import Login from '@/pages/Login'
-import Register from '@/pages/Register'
+import Auth from '@/pages/Auth'
 import JobList from '@/pages/jobs/JobList'
 import JobDetail from '@/pages/jobs/JobDetail'
 import SeekerDashboard from '@/pages/seeker/Dashboard'
@@ -15,14 +14,13 @@ import SeekerApplications from '@/pages/seeker/Applications'
 import SeekerApplicationDetail from '@/pages/seeker/ApplicationDetail'
 import SeekerProfile from '@/pages/seeker/Profile'
 import SavedJobs from '@/pages/seeker/SavedJobs'
-import JobAlerts from '@/pages/seeker/JobAlerts'
 import EmployerDashboard from '@/pages/employer/Dashboard'
 import EmployerJobs from '@/pages/employer/Jobs'
+import EmployerJobDetail from '@/pages/employer/JobDetail'
 import EmployerJobForm from '@/pages/employer/JobForm'
 import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
 import ResumeShortlist from '@/pages/employer/ResumeShortlist'
-import Messages from '@/pages/messages/Messages'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 
 function App() {
@@ -41,10 +39,12 @@ function App() {
       {/* Public standalone Landing page */}
       <Route path="/" element={<Landing />} />
 
-      {/* Guest-only routes (login/register) */}
+      {/* Guest-only routes (login/register with seamless 3D card flip) */}
       <Route element={<GuestOnly><GuestLayout /></GuestOnly>}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route element={<Auth />}>
+          <Route path="/login" element={<></>} />
+          <Route path="/register" element={<></>} />
+        </Route>
       </Route>
 
       {/* Main app routes with sidebar layout */}
@@ -52,16 +52,6 @@ function App() {
         {/* Public routes */}
         <Route path="/jobs" element={<JobList />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
-
-        {/* Unified Messages route accessible to authenticated users */}
-        <Route
-          path="/messages"
-          element={
-            <RequireAuth>
-              <Messages />
-            </RequireAuth>
-          }
-        />
 
         {/* Admin routes */}
         <Route
@@ -114,14 +104,6 @@ function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/seeker/job-alerts"
-          element={
-            <RequireAuth role="SEEKER">
-              <JobAlerts />
-            </RequireAuth>
-          }
-        />
 
         {/* Employer routes */}
         <Route
@@ -137,6 +119,14 @@ function App() {
           element={
             <RequireAuth role="EMPLOYER">
               <EmployerJobs />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/employer/jobs/:id"
+          element={
+            <RequireAuth role="EMPLOYER">
+              <EmployerJobDetail />
             </RequireAuth>
           }
         />
