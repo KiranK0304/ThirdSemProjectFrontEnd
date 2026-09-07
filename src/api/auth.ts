@@ -1,5 +1,11 @@
+import axios from 'axios';
 import { api } from './client';
 import { LoginRequest, LoginResponse, RegisterRequest, User } from './types';
+
+export interface RefreshResponse {
+  access: string;
+  refresh?: string;
+}
 
 export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>('/api/auth/login/', data);
@@ -16,8 +22,9 @@ export const logoutApi = async (refresh: string): Promise<void> => {
   return response.data;
 };
 
-export const refreshTokenApi = async (refresh: string): Promise<{ access: string }> => {
-  const response = await api.post<{ access: string }>('/api/auth/refresh/', { refresh });
+export const refreshTokenApi = async (refresh: string): Promise<RefreshResponse> => {
+  const baseURL = import.meta.env.VITE_API_URL || '';
+  const response = await axios.post<RefreshResponse>(`${baseURL}/api/auth/refresh/`, { refresh });
   return response.data;
 };
 

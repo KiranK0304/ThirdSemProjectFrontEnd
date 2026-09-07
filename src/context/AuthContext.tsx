@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { api, setTokens, clearTokens, getRefreshToken } from '@/api/client'
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '@/api/client'
 import type { User, LoginRequest, RegisterRequest } from '@/api/types'
 import { loginApi, registerApi, logoutApi, getMeApi, refreshTokenApi } from '@/api/auth'
 
@@ -17,26 +17,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // On mount, attempt silent refresh if we have a stored refresh token
+  // On mount, restore session:
+  // 1. If access token is in localStorage, fetch profile directly (no refresh latency/rotation)
+  // 2. If access token is expired or missing, attempt refresh using stored refresh token
   useEffect(() => {
+    let isMounted = true
+
     const init = async () => {
+      const access = getAccessToken()
       const refresh = getRefreshToken()
-      if (!refresh) {
-        setIsLoading(false)
+
+      if (!access && !refresh) {
+        if (isMounted) setIsLoading(false)
         return
       }
-      try {
-        const { access } = await refreshTokenApi(refresh)
-        setTokens(access, refresh)
-        const me = await getMeApi()
-        setUser(me)
-      } catch {
-        clearTokens()
-      } finally {
-        setIsLoading(false)
+
+      // If we have an access token, try fetching profile directly
+      if (access) {
+        try {
+          const me = await getMeApi()
+          if (isMounted) {
+            setUser(me)
+            setIsLoading(false)
+          }
+          return
+        } catch {
+          // Access token may have expired, fall through to refresh
+        }
       }
+
+      // If access token was missing or expired, attempt refresh
+      if (refresh) {
+        try {
+          const data = await refreshTokenApi(refresh)
+          setTokens(data.access, data.refresh || refresh)
+          const me = await getMeApi()
+          if (isMounted) {
+            setUser(me)
+          }
+        } catch {
+          clearTokens()
+          if (isMounted) setUser(null)
+        }
+      } else {
+        clearTokens()
+        if (isMounted) setUser(null)
+      }
+
+      if (isMounted) setIsLoading(false)
     }
+
     init()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const login = useCallback(async (data: LoginRequest) => {
