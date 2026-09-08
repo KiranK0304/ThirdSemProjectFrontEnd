@@ -51,9 +51,8 @@
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* Optional dark mode — same structure, inverted lightness */
-@media (prefers-color-scheme: dark) {
-  :root {
+/* The explicit theme choice takes precedence over the operating system theme. */
+:root[data-theme='dark'] {
     --color-bg: #0B0B0A;
     --color-surface: #161615;
     --color-surface-muted: #1E1E1C;
@@ -73,7 +72,6 @@
     --color-success-subtle: #103820;
     --color-danger-subtle: #3A1414;
     --color-warning-subtle: #3A2A08;
-  }
 }
 
 /* ── Reset & Global Styles ── */
@@ -99,6 +97,7 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg);
   min-height: 100vh;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 h1, h2 {

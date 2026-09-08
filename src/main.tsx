@@ -6,6 +6,10 @@ import { AuthProvider } from '@/context/AuthContext'
 import App from '@/App'
 import './index.css'
 
+const savedTheme = localStorage.getItem('hirely-theme')
+const initialTheme = savedTheme ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+document.documentElement.dataset.theme = initialTheme
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { Button, Avatar } from '@/components/ui'
@@ -7,13 +7,23 @@ import styles from './Layout.module.css'
 import { 
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
   FiUser, FiBriefcase, FiEdit, FiSettings, 
-  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell, FiBookmark
+  FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell, FiBookmark, FiSun, FiMoon
 } from 'react-icons/fi'
 
 export function AppLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('hirely-theme')
+    return savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
+
+  useEffect(() => {
+    const theme = isDarkMode ? 'dark' : 'light'
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('hirely-theme', theme)
+  }, [isDarkMode])
 
   const handleLogout = async () => {
     await logout()
@@ -26,6 +36,10 @@ export function AppLayout() {
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false)
+  }
+
+  const toggleTheme = () => {
+    setIsDarkMode((currentValue) => !currentValue)
   }
 
   const getInitials = (name?: string, email?: string) => {
@@ -121,6 +135,14 @@ export function AppLayout() {
           </div>
 
           <div className={styles.headerRight}>
+            <button
+              className={styles.themeToggle}
+              onClick={toggleTheme}
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDarkMode ? <FiSun size={20} /> : <FiMoon size={20} />}
+            </button>
             {user?.account_type === 'EMPLOYER' && (
               <Link to="/employer/jobs/new" className={styles.postJobBtn}>
                 <Button variant="primary">Post a Job</Button>
