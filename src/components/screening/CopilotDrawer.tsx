@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   FiCpu, FiX, FiSend, FiCheck, FiPlus, 
   FiSearch, FiAward, FiBarChart2, FiCheckCircle,
-  FiChevronDown, FiChevronUp
+  FiChevronDown, FiChevronUp, FiAlertCircle
 } from 'react-icons/fi';
 import { 
   useJobCopilotSessions, 
@@ -235,6 +235,8 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
 }) => {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
+  const [pendingUserText, setPendingUserText] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -255,12 +257,12 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
     }
   }, [sessions, activeSessionId]);
 
-  // Auto-scroll to bottom on messages update
+  // Auto-scroll to bottom on messages or pending updates
   useEffect(() => {
     if (isOpen) {
       chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, sendMessageMutation.isPending, isOpen]);
+  }, [messages, sendMessageMutation.isPending, pendingUserText, errorMessage, isOpen]);
 
   if (!isOpen) return null;
 
@@ -271,14 +273,21 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
         title: `Chat ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
       });
       setActiveSessionId(newSession.id);
-    } catch (err) {
+      setErrorMessage(null);
+    } catch (err: any) {
       console.error('Failed to create copilot session:', err);
+      const detail = err?.response?.data?.error || err?.message || 'Failed to create chat session.';
+      setErrorMessage(detail);
     }
   };
 
   const handleSendMessage = async (customMessage?: string) => {
     const textToSend = customMessage || inputValue.trim();
     if (!textToSend || sendMessageMutation.isPending) return;
+
+    setErrorMessage(null);
+    setPendingUserText(textToSend);
+    if (!customMessage) setInputValue('');
 
     let targetSessionId = activeSessionId;
 
@@ -291,21 +300,31 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
         });
         targetSessionId = newSession.id;
         setActiveSessionId(newSession.id);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to auto-create session:', err);
+        const detail = err?.response?.data?.error || err?.message || 'Failed to initialize chat session.';
+        setErrorMessage(detail);
+        setPendingUserText(null);
+        if (!customMessage) setInputValue(textToSend);
         return;
       }
     }
-
-    if (!customMessage) setInputValue('');
 
     try {
       await sendMessageMutation.mutateAsync({
         sessionId: targetSessionId,
         message: textToSend,
       });
-    } catch (err) {
+      setPendingUserText(null);
+    } catch (err: any) {
       console.error('Failed to send copilot message:', err);
+      const detail =
+        err?.response?.data?.error ||
+        err?.message ||
+        'Failed to deliver message to AI copilot. Please try again.';
+      setErrorMessage(detail);
+      setPendingUserText(null);
+      if (!customMessage) setInputValue(textToSend);
     }
   };
 
@@ -496,6 +515,13 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
           );
         })}
 
+        {/* Pending User Bubble while sending */}
+        {pendingUserText && (
+          <div className={`${styles.messageRow} ${styles.userRow}`}>
+            <div className={styles.userBubble}>{pendingUserText}</div>
+          </div>
+        )}
+
         {/* Thinking Indicator */}
         {sendMessageMutation.isPending && (
           <div className={`${styles.messageRow} ${styles.assistantRow}`}>
@@ -511,6 +537,20 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
 
       {/* Input Area */}
       <div className={styles.inputArea}>
+        {errorMessage && (
+          <div className={styles.errorMessageBanner}>
+            <FiAlertCircle className={styles.errorIcon} />
+            <span className={styles.errorText}>{errorMessage}</span>
+            <button
+              type="button"
+              className={styles.errorDismissButton}
+              onClick={() => setErrorMessage(null)}
+              aria-label="Dismiss error message"
+            >
+              ×
+            </button>
+          </div>
+        )}
         <div className={styles.inputWrapper}>
           <textarea
             ref={textareaRef}

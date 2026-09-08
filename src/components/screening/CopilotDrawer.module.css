@@ -504,6 +504,46 @@
   background-color: var(--color-surface);
 }
 
+.errorMessageBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 6px);
+  margin-bottom: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.errorIcon {
+  flex-shrink: 0;
+  font-size: 16px;
+  color: #dc2626;
+}
+
+.errorText {
+  flex: 1;
+}
+
+.errorDismissButton {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: #991b1b;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.errorDismissButton:hover {
+  background-color: #fee2e2;
+}
+
 .inputWrapper {
   display: flex;
   align-items: flex-end;
