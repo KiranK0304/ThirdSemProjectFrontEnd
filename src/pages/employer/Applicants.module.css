@@ -1,105 +1,275 @@
 .container {
-  max-width: 1000px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 32px 24px;
 }
 
 .backLink {
-  display: inline-block;
-  margin-bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 
 .backLink:hover {
-  text-decoration: underline;
+  color: var(--color-accent);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
   font-family: 'Fraunces', serif;
   font-weight: 500;
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1.2;
   color: var(--color-text-primary);
-  margin: 0 0 32px 0;
-}
-
-.applicantsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 24px;
-}
-
-.applicantCard {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-}
-
-.cardHeader {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.applicantInfo {
-  flex-grow: 1;
-}
-
-.applicantName {
-  font-size: 18px;
-  font-weight: 500;
   margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.tableCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.table th {
+  background-color: var(--color-surface-muted);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  padding: 12px 16px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
   color: var(--color-text-primary);
 }
 
-.applicantEmail {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-top: 4px;
+.table tr:last-child td {
+  border-bottom: none;
 }
 
-.coverLetter {
-  font-size: 15px;
-  line-height: 1.6;
+.table tr:hover td {
+  background-color: var(--color-surface-muted);
+}
+
+.candidateCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+}
+
+.candidateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.candidateName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.candidateEmail {
+  font-size: 12px;
   color: var(--color-text-secondary);
-  margin-bottom: 16px;
 }
 
-.readMoreBtn {
-  background: none;
-  border: none;
-  color: var(--color-accent);
-  cursor: pointer;
-  padding: 0;
+.dateText {
   font-size: 13px;
-  margin-left: 8px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
-.resumeSection {
-  margin-bottom: 24px;
-  font-size: 13px;
-}
-
-.resumeLink {
+.resumeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
   color: var(--color-accent);
   text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
-.resumeLink:hover {
-  text-decoration: underline;
+.resumeBtn:hover {
+  background-color: var(--color-accent-subtle);
+  border-color: var(--color-accent);
 }
 
-.statusUpdate {
-  margin-top: auto;
+.noResumeText {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.letterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.letterBtn:hover {
+  background-color: var(--color-surface-muted);
+  border-color: var(--color-border-strong, var(--color-text-secondary));
+}
+
+.noLetterText {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.statusSelect {
+  min-width: 140px;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.statusSelect:focus {
+  border-color: var(--color-accent);
+}
+
+.statusSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tableFooter {
+  padding: 12px 16px;
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
-  padding-top: 16px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.coverLetterModal {
+  max-height: 60vh;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  padding: 12px 0;
+}
+
+.applicantMetaHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 480px) {
-  .applicantsGrid {
-    grid-template-columns: 1fr;
+  .container {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .candidateCell {
+    min-width: 180px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
+
+  .statusSelect {
+    min-width: 120px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .tableFooter {
+    padding: 10px 12px;
+    font-size: 12px;
   }
 }

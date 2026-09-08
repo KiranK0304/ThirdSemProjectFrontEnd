@@ -1,8 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { AppLayout, GuestLayout } from '@/components/layout/Layout'
 import { RequireAuth, GuestOnly } from '@/components/layout/RequireAuth'
-import { LoadingSpinner } from '@/components/ui'
+import { LoadingSpinner, ErrorBoundary } from '@/components/ui'
 
 // Pages
 import Landing from '@/pages/Landing'
@@ -17,11 +17,15 @@ import SavedJobs from '@/pages/seeker/SavedJobs'
 import EmployerDashboard from '@/pages/employer/Dashboard'
 import EmployerJobs from '@/pages/employer/Jobs'
 import EmployerJobDetail from '@/pages/employer/JobDetail'
-import EmployerJobForm from '@/pages/employer/JobForm'
 import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
 import ResumeShortlist from '@/pages/employer/ResumeShortlist'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
+
+function EditJobRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={id ? `/employer/jobs?edit=${id}` : '/employer/jobs'} replace />;
+}
 
 function App() {
   const { isLoading } = useAuth()
@@ -35,9 +39,10 @@ function App() {
   }
 
   return (
-    <Routes>
-      {/* Public standalone Landing page */}
-      <Route path="/" element={<Landing />} />
+    <ErrorBoundary>
+      <Routes>
+        {/* Public standalone Landing page */}
+        <Route path="/" element={<Landing />} />
 
       {/* Guest-only routes (login/register with seamless 3D card flip) */}
       <Route element={<GuestOnly><GuestLayout /></GuestOnly>}>
@@ -142,7 +147,7 @@ function App() {
           path="/employer/jobs/new"
           element={
             <RequireAuth role="EMPLOYER">
-              <EmployerJobForm />
+              <Navigate to="/employer/jobs?action=new" replace />
             </RequireAuth>
           }
         />
@@ -150,7 +155,7 @@ function App() {
           path="/employer/jobs/:id/edit"
           element={
             <RequireAuth role="EMPLOYER">
-              <EmployerJobForm />
+              <EditJobRedirect />
             </RequireAuth>
           }
         />
@@ -175,7 +180,8 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
-  )
+  </ErrorBoundary>
+)
 }
 
 export default App

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   FiCpu, FiX, FiSend, FiCheck, FiPlus, 
-  FiSearch, FiAward, FiBarChart2, FiCheckCircle
+  FiSearch, FiAward, FiBarChart2, FiCheckCircle,
+  FiChevronDown, FiChevronUp
 } from 'react-icons/fi';
 import { 
   useJobCopilotSessions, 
@@ -118,14 +119,14 @@ const renderMarkdown = (text: string) => {
   return elements;
 };
 
-// Friendly status label mapper for tool executions (hiding internal query/mechanics)
+// Friendly status label mapper for tool executions
 const getToolFriendlyLabel = (toolName: string): string => {
   const normalized = (toolName || '').toLowerCase();
   if (normalized.includes('search')) {
-    return 'Searching candidates...';
+    return 'Searching candidate database...';
   }
   if (normalized.includes('top') || normalized.includes('get') || normalized.includes('detail')) {
-    return 'Fetching candidate details...';
+    return 'Analyzing candidate profiles...';
   }
   return 'Reviewing candidate records...';
 };
@@ -157,7 +158,7 @@ const CollapsibleCandidateAnalysis: React.FC<CollapsibleCandidateAnalysisProps> 
           Candidate Analysis ({candidates.length})
         </span>
         <span className={styles.candidateAnalysisArrow}>
-          {isExpanded ? '▴' : '▾'}
+          {isExpanded ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
         </span>
       </button>
 
@@ -428,22 +429,19 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
           <div className={styles.messageRow}>
             <div className={styles.assistantBubble}>
               <div className={styles.assistantHeader}>
-                <FiCpu /> Senior Talent Advisor Ready
+                <FiCpu size={14} /> Recruiter Copilot
               </div>
               <div className={styles.markdownContent}>
                 <p>
-                  Hello! I am your AI Recruiter Copilot for <strong>{jobTitle}</strong>.
+                  I have evaluated all <strong>{totalCandidates} candidate applications</strong> for <strong>{jobTitle}</strong>.
                 </p>
                 <p>
-                  I have analyzed the resumes of all <strong>{totalCandidates} applicants</strong> in PostgreSQL with dense semantic vectors.
-                </p>
-                <p>
-                  Ask me anything—such as:
+                  Ask me to compare candidate qualifications, inspect specific skills, or identify the best matches:
                 </p>
                 <ul>
-                  <li><em>"Who are our strongest candidates?"</em></li>
-                  <li><em>"Does anyone have production Kubernetes experience?"</em></li>
-                  <li><em>"Who has led technical teams before?"</em></li>
+                  <li><em>"Who are our top applicants and why?"</em></li>
+                  <li><em>"Which candidates have strong backend or system design experience?"</em></li>
+                  <li><em>"Compare the top 2 candidates and highlight their key trade-offs."</em></li>
                 </ul>
               </div>
             </div>
@@ -465,7 +463,7 @@ export const CopilotDrawer: React.FC<CopilotDrawerProps> = ({
               ) : (
                 <div className={styles.assistantBubble}>
                   <div className={styles.assistantHeader}>
-                    <FiCpu /> Senior Talent Advisor
+                    <FiCpu size={14} /> Recruiter Copilot
                   </div>
 
                   {/* Tool Call Badges */}

@@ -175,6 +175,16 @@
   padding: 4px;
 }
 
+.mobileLogo {
+  display: none;
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text);
+  text-decoration: none;
+  align-items: center;
+}
+
 .searchContainer {
   position: relative;
   width: 100%;
@@ -213,10 +223,6 @@
   display: flex;
   align-items: center;
   gap: 24px;
-}
-
-.postJobBtn {
-  text-decoration: none;
 }
 
 .notificationBtn {
@@ -454,6 +460,10 @@
     display: block;
   }
 
+  .mobileLogo {
+    display: flex;
+  }
+
   .header {
     padding: 0 16px;
   }
@@ -496,8 +506,8 @@
   .headerRight {
     gap: 12px;
   }
-  
-  .postJobBtn {
-    display: none;
+
+  .mainContent {
+    padding: 12px 8px;
   }
 }

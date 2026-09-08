@@ -1,38 +1,43 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Card, Tag, Avatar, Select, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
+import { Tag, Avatar, Modal, Button, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
 import { useEmployerJob } from '@/hooks/queries/useJobQueries';
 import { useEmployerJobApplicants, useUpdateApplicationStatus } from '@/hooks/queries/useApplicationQueries';
+import { formatDate } from '@/utils/date';
 import { getApplicationStatusVariant, getMediaUrl } from '@/utils/format';
+import { Application } from '@/api/types';
+import { FiArrowLeft, FiFileText, FiMessageSquare, FiExternalLink } from 'react-icons/fi';
 import styles from './Applicants.module.css';
 
 const STATUS_OPTIONS = [
   { value: 'SUBMITTED', label: 'Submitted' },
   { value: 'UNDER_REVIEW', label: 'Under Review' },
   { value: 'SHORTLISTED', label: 'Shortlisted' },
-  { value: 'REJECTED', label: 'Rejected' }
+  { value: 'OFFERED', label: 'Offered' },
+  { value: 'REJECTED', label: 'Rejected' },
 ];
 
 export const Applicants: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const jobId = Number(id);
+
   const { data: job, isLoading: isLoadingJob } = useEmployerJob(jobId);
   const { data: applicants, isLoading: isLoadingApplicants, error, refetch } = useEmployerJobApplicants(jobId);
   const updateStatus = useUpdateApplicationStatus();
 
-  const [expandedCoverLetters, setExpandedCoverLetters] = useState<Record<number, boolean>>({});
+  const [activeLetterApp, setActiveLetterApp] = useState<Application | null>(null);
 
   if (isLoadingJob || isLoadingApplicants) {
-    return <LoadingSpinner size="lg" />;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 0' }}>
+        <LoadingSpinner size="lg" />
+      </div>
+    );
   }
 
   if (error) {
-    return <ErrorState message="Failed to load applicants." onRetry={refetch} />;
+    return <ErrorState message="Failed to load applicants for this job." onRetry={refetch} />;
   }
-
-  const toggleCoverLetter = (id: number) => {
-    setExpandedCoverLetters(prev => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const handleStatusChange = async (applicationId: number, newStatus: string) => {
     try {
@@ -44,69 +49,164 @@ export const Applicants: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Link to="/employer/jobs" className={styles.backLink}>← Back to Jobs</Link>
-      <h1 className={styles.title}>Applicants for {job?.title || 'Job'}</h1>
+      <Link to="/employer/jobs" className={styles.backLink}>
+        <FiArrowLeft /> Back to Job Postings
+      </Link>
+
+      <div className={styles.header}>
+        <div className={styles.titleArea}>
+          <h1 className={styles.title}>Applicants for {job?.title || 'Job'}</h1>
+          <p className={styles.subtitle}>
+            Review applications, view candidate resumes, and update hiring pipeline statuses
+          </p>
+        </div>
+      </div>
 
       {!applicants || applicants.length === 0 ? (
-        <EmptyState title="No applicants yet" description="This job posting hasn't received any applications." />
+        <EmptyState
+          title="No applicants yet"
+          description="This job posting hasn't received any applications yet. Make sure your job details and requirements are up to date."
+        />
       ) : (
-        <div className={styles.applicantsGrid}>
-          {applicants.map((app) => {
-            const isExpanded = expandedCoverLetters[app.id];
-            const coverLetter = app.cover_letter || '';
-            const isTruncated = coverLetter.length > 150;
-            const displayCoverLetter = isExpanded || !isTruncated 
-              ? coverLetter 
-              : coverLetter.substring(0, 150) + '...';
+        <div className={styles.tableCard}>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Applied Date</th>
+                  <th>Resume</th>
+                  <th>Cover Letter</th>
+                  <th>Current Status</th>
+                  <th style={{ textAlign: 'right' }}>Update Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applicants.map((app) => {
+                  const applicantName = app.seeker?.user_name || app.seeker?.user_email || 'Applicant';
+                  const applicantEmail = app.seeker?.user_email || '';
+                  const hasResume = !!app.resume?.file_url;
+                  const hasCoverLetter = !!app.cover_letter && app.cover_letter.trim().length > 0;
+                  const isUpdating = updateStatus.isPending && updateStatus.variables?.id === app.id;
 
-            const applicantName = app.seeker?.user_name || app.seeker?.user_email || 'Applicant';
-            const applicantEmail = app.seeker?.user_email || '';
+                  return (
+                    <tr key={app.id}>
+                      <td>
+                        <div className={styles.candidateCell}>
+                          <Avatar name={applicantName} size={36} round />
+                          <div className={styles.candidateInfo}>
+                            <span className={styles.candidateName}>{applicantName}</span>
+                            <span className={styles.candidateEmail}>{applicantEmail}</span>
+                          </div>
+                        </div>
+                      </td>
 
-            return (
-              <Card key={app.id} className={styles.applicantCard}>
-                <div className={styles.cardHeader}>
-                  <Avatar name={applicantName} round />
-                  <div className={styles.applicantInfo}>
-                    <h3 className={styles.applicantName}>{applicantName}</h3>
-                    <div className={styles.applicantEmail}>{applicantEmail}</div>
-                  </div>
-                  <Tag variant={getApplicationStatusVariant(app.status)}>{app.status}</Tag>
-                </div>
+                      <td>
+                        <span className={styles.dateText}>{formatDate(app.created_at)}</span>
+                      </td>
 
-                {coverLetter && (
-                  <div className={styles.coverLetter}>
-                    {displayCoverLetter}
-                    {isTruncated && (
-                      <button className={styles.readMoreBtn} onClick={() => toggleCoverLetter(app.id)}>
-                        {isExpanded ? 'Show less' : 'Read more'}
-                      </button>
-                    )}
-                  </div>
-                )}
+                      <td>
+                        {hasResume ? (
+                          <a
+                            href={getMediaUrl(app.resume!.file_url)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.resumeBtn}
+                            title="Open candidate resume in new tab"
+                          >
+                            <FiFileText size={13} />
+                            <span>{app.resume!.title || 'Resume'}</span>
+                            <FiExternalLink size={11} style={{ opacity: 0.7 }} />
+                          </a>
+                        ) : (
+                          <span className={styles.noResumeText}>None attached</span>
+                        )}
+                      </td>
 
-                {app.resume && (
-                  <div className={styles.resumeSection}>
-                    Resume: <a href={getMediaUrl(app.resume.file_url)} target="_blank" rel="noopener noreferrer" className={styles.resumeLink}>{app.resume.title || 'Download Resume'}</a>
-                  </div>
-                )}
+                      <td>
+                        {hasCoverLetter ? (
+                          <button
+                            type="button"
+                            className={styles.letterBtn}
+                            onClick={() => setActiveLetterApp(app)}
+                            title="Read candidate's full cover letter"
+                          >
+                            <FiMessageSquare size={13} />
+                            <span>Read Letter</span>
+                          </button>
+                        ) : (
+                          <span className={styles.noLetterText}>None provided</span>
+                        )}
+                      </td>
 
-                <div className={styles.statusUpdate}>
-                  <Select 
-                    label="Update Status"
-                    options={STATUS_OPTIONS}
-                    value={app.status}
-                    onChange={(e) => handleStatusChange(app.id, e.target.value)}
-                    disabled={updateStatus.isPending && updateStatus.variables?.id === app.id}
-                  />
-                </div>
-              </Card>
-            );
-          })}
+                      <td>
+                        <Tag variant={getApplicationStatusVariant(app.status)}>{app.status}</Tag>
+                      </td>
+
+                      <td style={{ textAlign: 'right' }}>
+                        <select
+                          className={styles.statusSelect}
+                          value={app.status}
+                          onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                          disabled={isUpdating}
+                          aria-label={`Update status for ${applicantName}`}
+                        >
+                          {STATUS_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.tableFooter}>
+            Showing {applicants.length} {applicants.length === 1 ? 'applicant' : 'total applicants'}
+          </div>
         </div>
       )}
+
+      {/* Cover Letter Modal Dialog */}
+      <Modal
+        open={!!activeLetterApp}
+        onClose={() => setActiveLetterApp(null)}
+        title="Candidate Cover Letter"
+        maxWidth="600px"
+        actions={
+          <Button variant="secondary" onClick={() => setActiveLetterApp(null)}>
+            Close
+          </Button>
+        }
+      >
+        {activeLetterApp && (
+          <div>
+            <div className={styles.applicantMetaHeader}>
+              <Avatar
+                name={activeLetterApp.seeker?.user_name || activeLetterApp.seeker?.user_email || 'Applicant'}
+                size={34}
+                round
+              />
+              <div>
+                <strong style={{ display: 'block', fontSize: '14px', color: 'var(--color-text-primary)' }}>
+                  {activeLetterApp.seeker?.user_name || 'Applicant'}
+                </strong>
+                <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  {activeLetterApp.seeker?.user_email} • Applied {formatDate(activeLetterApp.created_at)}
+                </span>
+              </div>
+            </div>
+            <div className={styles.coverLetterModal}>
+              {activeLetterApp.cover_letter}
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
 
 export default Applicants;
-

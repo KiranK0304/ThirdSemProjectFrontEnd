@@ -8,9 +8,11 @@ export interface ModalProps {
   title?: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
+  maxWidth?: string | number;
+  className?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, actions }) => {
+export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, actions, maxWidth, className }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,7 +38,8 @@ export const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, ac
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div 
-        className={styles.modal} 
+        className={`${styles.modal} ${className || ''}`} 
+        style={maxWidth ? { maxWidth } : undefined}
         ref={modalRef} 
         onClick={(e) => e.stopPropagation()}
         role="dialog"

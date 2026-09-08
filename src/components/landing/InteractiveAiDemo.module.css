@@ -180,73 +180,274 @@
   box-shadow: 0 30px 70px rgba(0, 0, 0, 0.9), 0 0 32px rgba(255, 255, 255, 0.06);
 }
 
-/* ── Media / Placeholder ── */
+/* ── Mockup Graphics for 3 Cards ── */
 
-.mediaContainer {
+.mockupBox {
+  width: 100%;
+  height: 100%;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font-body);
+  background: #121212;
+  box-sizing: border-box;
+}
+
+.mockupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.mockupTitle {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: #FFFFFF;
+  letter-spacing: -0.2px;
+}
+
+.mockupBadge {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  padding: 1px 6px;
+  border-radius: 9999px;
+}
+
+/* 1. Pipeline Lanes */
+.pipelineLanes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   flex: 1;
-  background-color: #121212;
-  position: relative;
-  overflow: hidden;
+}
+
+.pipelineLane {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.laneTitle {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.laneCard {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.cardImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #111111 100%);
-}
-
-.radialSvg {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.card:hover .radialSvg {
-  transform: scale(1.08) rotate(15deg);
-}
-
-.placeholderIconWrapper {
-  position: relative;
-  z-index: 2;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  gap: 8px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.cardInitials {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 9px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease, background-color 0.3s ease;
+  flex-shrink: 0;
 }
 
-.card:hover .placeholderIconWrapper {
-  background: rgba(255, 255, 255, 0.09);
-  transform: scale(1.1);
-}
-
-.placeholderIcon {
-  color: rgba(255, 255, 255, 0.4);
-  transition: color 0.3s ease;
-}
-
-.card:hover .placeholderIcon {
+.cardInitialsAccent {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: rgba(217, 119, 6, 0.2);
   color: var(--color-accent);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.candidateName {
+  font-size: 11px;
+  font-weight: 500;
+  color: #FFFFFF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.candidateRole {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.matchScore {
+  font-size: 9px;
+  font-weight: 600;
+  color: #10B981;
+}
+
+.statusOffered {
+  font-size: 9px;
+  font-weight: 600;
+  color: #60A5FA;
+}
+
+/* 2. Shortlist Table */
+.tableWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.tableHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.35);
+  padding: 0 4px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.candidateCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rankNum {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.rowName {
+  font-size: 11px;
+  font-weight: 500;
+  color: #FFFFFF;
+}
+
+.scorePill {
+  font-size: 10px;
+  font-weight: 600;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.tierPill {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: rgba(217, 119, 6, 0.12);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+}
+
+.tierPillMuted {
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 3. Copilot Chat Drawer */
+.copilotChat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.activeDotBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 500;
+  color: #10B981;
+}
+
+.greenDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.chatUser {
+  align-self: flex-end;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+  padding: 6px 10px;
+  border-radius: 8px 8px 2px 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  max-width: 90%;
+}
+
+.chatAi {
+  align-self: flex-start;
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 8px 10px;
+  border-radius: 8px 8px 8px 2px;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.recTag {
+  margin-top: auto;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--color-accent);
+  background: rgba(217, 119, 6, 0.06);
+  border: 1px dashed rgba(217, 119, 6, 0.3);
+  padding: 6px 8px;
+  border-radius: 6px;
 }
 
 /* ── Card Footer with Mono Captions ── */

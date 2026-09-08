@@ -75,15 +75,6 @@
   color: var(--color-text-primary, #111827);
 }
 
-.actionsBar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border, #e5e7eb);
-}
-
 .sectionCard {
   background-color: var(--color-surface, #ffffff);
   border: 1px solid var(--color-border, #e5e7eb);
@@ -140,4 +131,59 @@
   line-height: 1.5;
   color: var(--color-text-secondary, #4b5563);
   margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .headerCard,
+  .sectionCard {
+    padding: 20px 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .metaGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px;
+  }
+
+  .headerCard,
+  .sectionCard {
+    padding: 16px 14px;
+    border-radius: var(--radius-md);
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .headerTop {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .metaGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .metaItem {
+    font-size: 13px;
+  }
+
+  .companyCard {
+    padding: 14px;
+  }
 }

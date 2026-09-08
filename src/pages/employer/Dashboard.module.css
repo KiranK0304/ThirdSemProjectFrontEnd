@@ -228,33 +228,102 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+    gap: 24px;
+  }
+
+  .headerTitle {
+    font-size: 26px;
+  }
+
   .statsRow {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .statCard {
+    padding: 18px 16px;
+  }
+
+  .statNumber {
+    font-size: 36px;
   }
 
   .jobCardRow, .applicantCard {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
   }
 
-  .jobActions, .applicantMeta {
+  .jobActions {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    width: 100%;
+  }
+
+  .applicantMeta {
     align-items: flex-start;
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 16px;
-  }
-  
-  .statsRow {
-    grid-template-columns: 1fr;
+    padding: 16px 12px;
+    gap: 20px;
   }
 
-  .sectionHeader {
+  .headerTitle {
+    font-size: 22px;
+  }
+
+  .headerSubtitle {
+    font-size: 14px;
+  }
+
+  .warningCard {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .statCard {
+    padding: 14px 10px;
+    gap: 4px;
+  }
+
+  .statNumber {
+    font-size: 28px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+  }
+
+  .jobTitle, .applicantName {
+    font-size: 15px;
+  }
+
+  .jobMeta {
+    flex-wrap: wrap;
+    gap: 6px;
   }
 }

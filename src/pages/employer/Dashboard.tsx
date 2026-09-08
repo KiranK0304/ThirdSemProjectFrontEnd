@@ -71,11 +71,10 @@ const Dashboard: React.FC = () => {
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Recent Job Postings</h2>
           <Button 
-            variant="primary" 
-            onClick={() => navigate('/employer/jobs/new')}
-            style={{ backgroundColor: 'var(--color-accent)' }}
+            variant="outline" 
+            onClick={() => navigate('/employer/jobs')}
           >
-            Post a Job
+            View Jobs
           </Button>
         </div>
         
@@ -92,7 +91,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className={styles.jobActions}>
                   <Link to={`/employer/jobs/${job.id}/applicants`} className={styles.actionLink}>View Applicants</Link>
-                  <Link to={`/employer/jobs/${job.id}/edit`} className={styles.actionLink}>Edit</Link>
+                  <Link to={`/employer/jobs?edit=${job.id}`} className={styles.actionLink}>Edit</Link>
                 </div>
               </div>
             ))

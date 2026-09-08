@@ -4,6 +4,8 @@ import styles from './HowItWorksSection.module.css'
 
 interface StepItem {
   number: string
+  role: string
+  isAi?: boolean
   title: string
   description: string
 }
@@ -14,23 +16,34 @@ export default function HowItWorksSection() {
   const steps: StepItem[] = [
     {
       number: '1',
-      title: 'Create your profile',
-      description: 'Upload your resume and set your preferences in minutes.',
+      role: 'Employer',
+      title: 'Post the Job & Role Criteria',
+      description: 'Employers publish positions specifying technical requirements, must-have skills, and role expectations in minutes.',
     },
     {
       number: '2',
-      title: 'Set your criteria',
-      description: 'Choose the skills, roles, and salary expectations that matter to you.',
+      role: 'Job Seeker',
+      title: 'Apply by Uploading Resume',
+      description: 'Seekers apply in one click by uploading their resume—zero tedious multi-page forms or manual data entry.',
     },
     {
       number: '3',
-      title: 'Get matched by AI',
-      description: 'Our agent evaluates and ranks matches based on real project depth.',
+      role: 'AI Matching',
+      isAi: true,
+      title: 'AI Shortlists Based on Requirements',
+      description: 'Our autonomous screening engine parses actual project depth and skills, scoring and ranking applicants against job benchmarks.',
     },
     {
       number: '4',
-      title: 'Connect & get hired',
-      description: 'Chat directly with hiring managers, schedule interviews, and accept offers.',
+      role: 'Recruiter',
+      title: 'Recruiter Reviews & Confirms Shortlist',
+      description: 'Hiring managers inspect AI evaluation breakdowns, query candidate insights via the Copilot drawer, and finalize the shortlist.',
+    },
+    {
+      number: '5',
+      role: 'Job Seeker',
+      title: 'Seeker Receives Live Pipeline Updates',
+      description: 'Candidates receive real-time notifications and transparent stage updates right on their dashboard from screening to offer.',
     },
   ]
 
@@ -47,11 +60,11 @@ export default function HowItWorksSection() {
             How <span className={styles.accent}>Hirely</span> works
           </h2>
           <p className={styles.subtitle}>
-            A clear path from application to hired. No gatekeepers, no redundant forms: just intelligent matching that works.
+            An intelligent recruitment lifecycle connecting employers and talent through autonomous AI matching and real-time candidate updates.
           </p>
         </div>
 
-        {/* ── Right Column: 4 Numbered Steps ── */}
+        {/* ── Right Column: 5 Numbered Steps ── */}
         <div className={styles.rightCol}>
           <div className={styles.stepsList}>
             {steps.map((step, idx) => (
@@ -62,7 +75,12 @@ export default function HowItWorksSection() {
               >
                 <div className={styles.stepBadge}>{step.number}</div>
                 <div className={styles.stepContent}>
-                  <h3 className={styles.stepTitle}>{step.title}</h3>
+                  <div className={styles.stepHeader}>
+                    <h3 className={styles.stepTitle}>{step.title}</h3>
+                    <span className={step.isAi ? styles.roleBadgeAi : styles.roleBadge}>
+                      {step.role}
+                    </span>
+                  </div>
                   <p className={styles.stepDescription}>{step.description}</p>
                 </div>
               </div>

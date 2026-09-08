@@ -167,17 +167,40 @@
 
 @media (max-width: 768px) {
   .hero {
-    padding: 24px 24px 32px;
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 100svh;
+    min-height: -webkit-fill-available;
+    padding: 24px 20px 24px;
+    justify-content: space-between;
+    box-sizing: border-box;
+  }
+
+  .heroBody {
+    padding: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .headline {
+    font-size: clamp(28px, 7.5vw, 42px);
     letter-spacing: -1px;
+    line-height: 1.1;
   }
 
   .heroFooter {
     flex-direction: column;
     align-items: flex-start;
-    gap: 24px;
+    gap: 16px;
+    margin-top: auto;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 100%;
   }
 
   .brDesktop {
@@ -187,5 +210,16 @@
   .ctas {
     width: 100%;
     justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .ctaOutlined {
+    padding: 10px 22px;
+    font-size: 11px;
+  }
+
+  .ctaAccent {
+    width: 40px;
+    height: 40px;
   }
 }

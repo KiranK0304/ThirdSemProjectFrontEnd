@@ -1,12 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Tag, ErrorState, LoadingSpinner } from '@/components/ui';
+import { Tag, ErrorState, LoadingSpinner } from '@/components/ui';
 import { useEmployerJob, useJob } from '@/hooks/queries/useJobQueries';
 import { formatDate, formatSalary } from '@/utils/date';
 import { formatEmploymentType, getJobStatusVariant } from '@/utils/format';
 import { 
-  FiArrowLeft, FiEdit2, FiUsers, FiCpu, 
-  FiMapPin, FiBriefcase, FiDollarSign, FiCalendar 
+  FiArrowLeft, FiMapPin, FiBriefcase, FiDollarSign, FiCalendar 
 } from 'react-icons/fi';
 import styles from './JobDetail.module.css';
 
@@ -102,28 +101,6 @@ export const EmployerJobDetail: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className={styles.actionsBar}>
-          <Button 
-            variant="primary" 
-            onClick={() => navigate(`/employer/jobs/${job.id}/edit`)}
-          >
-            <FiEdit2 style={{ marginRight: '6px' }} /> Edit Job
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={() => navigate(`/employer/jobs/${job.id}/applicants`)}
-          >
-            <FiUsers style={{ marginRight: '6px' }} /> View Applicants
-          </Button>
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/employer/shortlist')}
-          >
-            <FiCpu style={{ marginRight: '6px' }} /> AI Shortlist / Copilot
-          </Button>
-        </div>
       </div>
 
       {/* Job Description Card */}
@@ -158,30 +135,6 @@ export const EmployerJobDetail: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Bottom Actions Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/employer/jobs')}
-        >
-          <FiArrowLeft style={{ marginRight: '6px' }} /> Back to Jobs
-        </Button>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Button 
-            variant="primary" 
-            onClick={() => navigate(`/employer/jobs/${job.id}/edit`)}
-          >
-            <FiEdit2 style={{ marginRight: '6px' }} /> Edit Job
-          </Button>
-          <Button 
-            variant="secondary" 
-            onClick={() => navigate(`/employer/jobs/${job.id}/applicants`)}
-          >
-            <FiUsers style={{ marginRight: '6px' }} /> View Applicants
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };

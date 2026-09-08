@@ -19,32 +19,25 @@ export default function InteractiveAiDemo() {
 
   const cards: ShowcaseCard[] = [
     {
-      id: 'agent-1',
-      caption: 'AGENT 01 // RESUME SCAN',
-      subcaption: 'Deep context parsing & skills extraction',
-      tilt: -4,
-      offsetY: 18,
+      id: 'pipeline-workspace',
+      caption: 'STAGE 01 // PIPELINE WORKSPACE',
+      subcaption: 'End-to-end recruitment workspace & stage tracking',
+      tilt: -3,
+      offsetY: 12,
     },
     {
-      id: 'agent-2',
-      caption: 'AGENT 02 // CRITERIA RANKING',
-      subcaption: 'Multi-criteria scoring & candidate tiers',
-      tilt: -1.5,
-      offsetY: -10,
+      id: 'shortlist-ranking',
+      caption: 'STAGE 02 // SHORTLIST RANKING',
+      subcaption: 'Multi-criteria weighted scoring & candidate tiers',
+      tilt: 0,
+      offsetY: -8,
     },
     {
-      id: 'agent-3',
-      caption: 'AGENT 03 // COPILOT DRAWER',
-      subcaption: 'Natural language candidate intelligence',
-      tilt: 2,
-      offsetY: 14,
-    },
-    {
-      id: 'agent-4',
-      caption: 'AGENT 04 // SHORTLIST DISPATCH',
-      subcaption: 'Automated export & recruiter handoff',
-      tilt: 4.5,
-      offsetY: -6,
+      id: 'copilot-drawer',
+      caption: 'STAGE 03 // COPILOT DRAWER',
+      subcaption: 'Natural language candidate intelligence & recruiter copilot',
+      tilt: 3,
+      offsetY: 12,
     },
   ]
 
@@ -96,38 +89,107 @@ export default function InteractiveAiDemo() {
                   animationDelay: `${idx * 0.1}s`,
                 } as React.CSSProperties}
               >
-                {/* Image or Placeholder Graphic */}
+                {/* Image or Feature Mockup Graphic */}
                 <div className={styles.mediaContainer}>
-                  {card.imageUrl ? (
-                    <img
-                      src={card.imageUrl}
-                      alt={card.caption}
-                      className={styles.cardImage}
-                    />
-                  ) : (
-                    <div className={styles.placeholder}>
-                      {/* Concentric radial rings from reference image */}
-                      <svg
-                        className={styles.radialSvg}
-                        viewBox="0 0 200 200"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        {/* Radial sector spokes */}
-                        <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                        <line x1="100" y1="10" x2="100" y2="190" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-                        <line x1="36" y1="36" x2="164" y2="164" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
-                        <line x1="36" y1="164" x2="164" y2="36" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                  {card.id === 'pipeline-workspace' && (
+                    <div className={styles.mockupBox}>
+                      <div className={styles.mockupHeader}>
+                        <span className={styles.mockupTitle}>Full-Stack Architect</span>
+                        <span className={styles.mockupBadge}>42 Active</span>
+                      </div>
+                      <div className={styles.pipelineLanes}>
+                        <div className={styles.pipelineLane}>
+                          <span className={styles.laneTitle}>Applied (24)</span>
+                          <div className={styles.laneCard}>
+                            <span className={styles.cardInitials}>SC</span>
+                            <div className={styles.cardMeta}>
+                              <span className={styles.candidateName}>Sarah C.</span>
+                              <span className={styles.candidateRole}>React · Node</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.pipelineLane}>
+                          <span className={styles.laneTitle}>Shortlist (8)</span>
+                          <div className={styles.laneCard}>
+                            <span className={styles.cardInitialsAccent}>AC</span>
+                            <div className={styles.cardMeta}>
+                              <span className={styles.candidateName}>Alex Chen</span>
+                              <span className={styles.matchScore}>96% Match</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.pipelineLane}>
+                          <span className={styles.laneTitle}>Offer (2)</span>
+                          <div className={styles.laneCard}>
+                            <span className={styles.cardInitials}>ER</span>
+                            <div className={styles.cardMeta}>
+                              <span className={styles.candidateName}>Elena R.</span>
+                              <span className={styles.statusOffered}>Offer Sent</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                        {/* Outer burst ring */}
-                        <circle cx="100" cy="100" r="82" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                        {/* Middle ring */}
-                        <circle cx="100" cy="100" r="54" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.09)" strokeWidth="1" />
-                        {/* Inner ring */}
-                        <circle cx="100" cy="100" r="28" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-                      </svg>
-                      <div className={styles.placeholderIconWrapper}>
-                        <FiImage size={24} className={styles.placeholderIcon} />
+                  {card.id === 'shortlist-ranking' && (
+                    <div className={styles.mockupBox}>
+                      <div className={styles.mockupHeader}>
+                        <span className={styles.mockupTitle}>Ranked Shortlist</span>
+                        <span className={styles.mockupBadge}>AI Scored</span>
+                      </div>
+                      <div className={styles.tableWrap}>
+                        <div className={styles.tableHeaderRow}>
+                          <span>Candidate</span>
+                          <span>Score</span>
+                          <span>Tier</span>
+                        </div>
+                        <div className={styles.tableRow}>
+                          <div className={styles.candidateCell}>
+                            <span className={styles.rankNum}>01</span>
+                            <span className={styles.rowName}>Alex Chen</span>
+                          </div>
+                          <span className={styles.scorePill}>96%</span>
+                          <span className={styles.tierPill}>Tier 1</span>
+                        </div>
+                        <div className={styles.tableRow}>
+                          <div className={styles.candidateCell}>
+                            <span className={styles.rankNum}>02</span>
+                            <span className={styles.rowName}>Elena Rostova</span>
+                          </div>
+                          <span className={styles.scorePill}>92%</span>
+                          <span className={styles.tierPill}>Tier 1</span>
+                        </div>
+                        <div className={styles.tableRow}>
+                          <div className={styles.candidateCell}>
+                            <span className={styles.rankNum}>03</span>
+                            <span className={styles.rowName}>Marcus Vance</span>
+                          </div>
+                          <span className={styles.scorePill}>88%</span>
+                          <span className={styles.tierPillMuted}>Tier 2</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {card.id === 'copilot-drawer' && (
+                    <div className={styles.mockupBox}>
+                      <div className={styles.mockupHeader}>
+                        <span className={styles.mockupTitle}>Recruiter Copilot</span>
+                        <span className={styles.activeDotBadge}>
+                          <span className={styles.greenDot} /> Online
+                        </span>
+                      </div>
+                      <div className={styles.copilotChat}>
+                        <div className={styles.chatUser}>
+                          Compare candidates on distributed system scaling.
+                        </div>
+                        <div className={styles.chatAi}>
+                          Alex architected Redis cache clusters handling 50k QPS; Elena managed AWS Kafka streaming across 8 regions.
+                        </div>
+                        <div className={styles.recTag}>
+                          ★ Recommended: Advance Alex to Technical Screen
+                        </div>
                       </div>
                     </div>
                   )}

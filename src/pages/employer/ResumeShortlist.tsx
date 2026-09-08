@@ -1,17 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  FiCpu, FiDownload, FiUsers, FiExternalLink, 
-  FiCheckCircle, FiXCircle, FiAward, FiMessageSquare,
-  FiFilter
+  FiDownload, FiExternalLink, 
+  FiCheckCircle, FiXCircle, FiCheck
 } from 'react-icons/fi';
-import { Button, LoadingSpinner, EmptyState } from '@/components/ui';
+import { Tag, Avatar, LoadingSpinner, EmptyState, ConfirmModal } from '@/components/ui';
 import { useEmployerJobs } from '@/hooks/queries/useJobQueries';
 import { 
   useEmployerJobApplicants, 
   useUpdateApplicationStatus 
 } from '@/hooks/queries/useApplicationQueries';
 import { exportApplicationsToCsv } from '@/utils/exportCsv';
-import { getMediaUrl } from '@/utils/format';
+import { getMediaUrl, getApplicationStatusVariant } from '@/utils/format';
 import CopilotDrawer from '@/components/screening/CopilotDrawer';
 import { Application } from '@/api/types';
 import styles from './ResumeShortlist.module.css';
@@ -22,6 +21,19 @@ export const ResumeShortlist: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'STRONG_FIT' | 'SHORTLISTED'>('ALL');
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
+
+  // Confirmation modal state for Shortlist / Reject
+  const [confirmModalState, setConfirmModalState] = useState<{
+    open: boolean;
+    type: 'SHORTLIST' | 'REJECT';
+    applicationId: number | null;
+    candidateName: string;
+  }>({
+    open: false,
+    type: 'SHORTLIST',
+    applicationId: null,
+    candidateName: '',
+  });
 
   // Auto-select first job if available
   useEffect(() => {
@@ -54,17 +66,37 @@ export const ResumeShortlist: React.FC = () => {
     return set;
   }, [applicants]);
 
-  // Handle status update
-  const handleUpdateStatus = async (applicationId: number, newStatus: 'SHORTLISTED' | 'REJECTED', candidateName?: string) => {
+  // Prompt confirmation for status updates
+  const handlePromptAction = (
+    applicationId: number, 
+    type: 'SHORTLIST' | 'REJECT', 
+    candidateName?: string
+  ) => {
+    setConfirmModalState({
+      open: true,
+      type,
+      applicationId,
+      candidateName: candidateName || `Applicant #${applicationId}`,
+    });
+  };
+
+  // Execute status update after confirmation
+  const handleConfirmAction = async () => {
+    if (!confirmModalState.applicationId) return;
+
+    const { applicationId, type, candidateName } = confirmModalState;
+    const newStatus = type === 'SHORTLIST' ? 'SHORTLISTED' : 'REJECTED';
+
     try {
       await updateStatusMutation.mutateAsync({
         id: applicationId,
         status: newStatus,
       });
+      setConfirmModalState((prev) => ({ ...prev, open: false }));
       setActionSuccessMessage(
         candidateName
-          ? `${candidateName} status updated to ${newStatus === 'SHORTLISTED' ? 'Shortlisted' : 'Rejected'}.`
-          : `Applicant #${applicationId} updated.`
+          ? `${candidateName} has been ${newStatus === 'SHORTLISTED' ? 'shortlisted' : 'marked as rejected'}.`
+          : `Applicant status updated.`
       );
       setTimeout(() => setActionSuccessMessage(null), 3000);
       refetchApplicants();
@@ -112,7 +144,9 @@ export const ResumeShortlist: React.FC = () => {
   if (isLoadingJobs) {
     return (
       <div className={styles.container}>
-        <LoadingSpinner size="lg" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '64px 0' }}>
+          <LoadingSpinner size="lg" />
+        </div>
       </div>
     );
   }
@@ -121,13 +155,12 @@ export const ResumeShortlist: React.FC = () => {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
-          <h1 className={styles.title}>
-            <span className={styles.titleIcon}><FiCpu /></span>
-            AI Candidate Shortlisting
-          </h1>
-          <p className={styles.subtitle}>
-            Screen and shortlist candidates objectively using automated AI resume analysis.
-          </p>
+          <div className={styles.titleArea}>
+            <h1 className={styles.title}>AI Candidate Shortlisting</h1>
+            <p className={styles.subtitle}>
+              Screen and shortlist candidates objectively using automated AI resume analysis.
+            </p>
+          </div>
         </div>
         <EmptyState 
           title="No jobs posted yet" 
@@ -139,16 +172,13 @@ export const ResumeShortlist: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
+      {/* Header — clean title with NO icon */}
       <div className={styles.header}>
         <div className={styles.headerTopRow}>
-          <div>
-            <h1 className={styles.title}>
-              <span className={styles.titleIcon}><FiCpu /></span>
-              AI Candidate Shortlisting & Copilot
-            </h1>
+          <div className={styles.titleArea}>
+            <h1 className={styles.title}>AI Candidate Shortlisting</h1>
             <p className={styles.subtitle}>
-              Automated AI resume evaluation, candidate leaderboard, and conversational recruiter copilot.
+              Autonomous AI resume evaluation, candidate leaderboard, and conversational recruiter copilot.
             </p>
           </div>
 
@@ -156,14 +186,9 @@ export const ResumeShortlist: React.FC = () => {
             type="button"
             className={`${styles.copilotToggleBtn} ${isCopilotOpen ? styles.copilotToggleBtnActive : ''}`}
             onClick={() => setIsCopilotOpen((prev) => !prev)}
-            title="Open AI Recruiter Copilot"
+            title="Open AI Recruiter"
           >
-            <FiCpu className={styles.copilotIcon} />
-            <span>AI Recruiter Copilot</span>
-            <span className={styles.copilotPulseDot} />
-            {applicants && applicants.length > 0 && (
-              <span className={styles.copilotBadge}>{applicants.length} candidates</span>
-            )}
+            AI Recruiter
           </button>
         </div>
       </div>
@@ -179,18 +204,19 @@ export const ResumeShortlist: React.FC = () => {
           alignItems: 'center',
           gap: '8px',
           fontSize: '14px',
-          fontWeight: 500
+          fontWeight: 500,
+          border: '1px solid rgba(16, 185, 129, 0.2)'
         }}>
           <FiCheckCircle /> {actionSuccessMessage}
         </div>
       )}
 
-      {/* Controls Card */}
-      <div className={styles.controlCard}>
-        <div className={styles.selectorRow}>
+      {/* Unified Command Card */}
+      <div className={styles.commandCard}>
+        <div className={styles.commandRow}>
           <div className={styles.jobSelectWrapper}>
             <label className={styles.jobSelectLabel} htmlFor="job-select">
-              Select Job Posting
+              Job Posting:
             </label>
             <select
               id="job-select"
@@ -206,67 +232,59 @@ export const ResumeShortlist: React.FC = () => {
             </select>
           </div>
 
-          <div className={styles.jobStats}>
-            <div className={styles.statBadge}>
-              <FiUsers />
-              <span>Total Applicants:</span>
-              <span className={styles.statValue}>{applicants?.length ?? 0}</span>
+          {/* High-density KPI Metrics Strip */}
+          <div className={styles.kpiStrip}>
+            <div className={styles.kpiItem}>
+              <span className={styles.kpiLabel}>Total Candidates</span>
+              <span className={styles.kpiValue}>{applicants?.length ?? 0}</span>
             </div>
-            <div className={styles.statBadge}>
-              <FiAward />
-              <span>Strong AI Fit:</span>
-              <span className={styles.statValue}>{strongFitCount}</span>
+            <div className={styles.kpiItem}>
+              <span className={styles.kpiLabel}>Strong AI Fit</span>
+              <span className={`${styles.kpiValue} ${styles.kpiHighlight}`}>{strongFitCount}</span>
             </div>
-            <div className={styles.statBadge}>
-              <FiCheckCircle />
-              <span>Shortlisted:</span>
-              <span className={styles.statValue}>{shortlistedIds.size}</span>
+            <div className={styles.kpiItem}>
+              <span className={styles.kpiLabel}>Shortlisted</span>
+              <span className={styles.kpiValue}>{shortlistedIds.size}</span>
             </div>
           </div>
         </div>
 
-        {/* Filter Chips Bar */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingTop: '16px',
-          borderTop: '1px solid var(--color-border, #e5e7eb)',
-          flexWrap: 'wrap',
-          gap: '12px'
-        }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Filter Controls & Utilities */}
+        <div className={styles.filterRow}>
+          <div className={styles.segmentedControl}>
             <button
               type="button"
-              className={`${styles.presetChip} ${activeFilter === 'ALL' ? styles.presetChipActive : ''}`}
+              className={`${styles.segmentBtn} ${activeFilter === 'ALL' ? styles.segmentBtnActive : ''}`}
               onClick={() => setActiveFilter('ALL')}
             >
-              All Applicants ({applicants?.length ?? 0})
+              All Candidates ({applicants?.length ?? 0})
             </button>
             <button
               type="button"
-              className={`${styles.presetChip} ${activeFilter === 'STRONG_FIT' ? styles.presetChipActive : ''}`}
+              className={`${styles.segmentBtn} ${activeFilter === 'STRONG_FIT' ? styles.segmentBtnActive : ''}`}
               onClick={() => setActiveFilter('STRONG_FIT')}
             >
-              🌟 Strong Fit ({strongFitCount})
+              Strong Fit ({strongFitCount})
             </button>
             <button
               type="button"
-              className={`${styles.presetChip} ${activeFilter === 'SHORTLISTED' ? styles.presetChipActive : ''}`}
+              className={`${styles.segmentBtn} ${activeFilter === 'SHORTLISTED' ? styles.segmentBtnActive : ''}`}
               onClick={() => setActiveFilter('SHORTLISTED')}
             >
-              ✅ Shortlisted ({shortlistedIds.size})
+              Shortlisted ({shortlistedIds.size})
             </button>
           </div>
 
           <div>
-            <Button
-              variant="secondary"
+            <button
+              type="button"
+              className={styles.exportBtn}
               onClick={handleExportCsv}
               disabled={!applicants || applicants.length === 0}
+              title="Download CSV report of current candidate evaluations"
             >
-              <FiDownload /> Export to CSV
-            </Button>
+              <FiDownload size={14} /> Export CSV
+            </button>
           </div>
         </div>
       </div>
@@ -274,26 +292,24 @@ export const ResumeShortlist: React.FC = () => {
       {/* Results Section / Table */}
       <div className={styles.resultsSection}>
         <div className={styles.resultsHeader}>
-          <div className={styles.resultsTitleArea}>
-            <h2 className={styles.resultsHeading}>Candidate Leaderboard</h2>
-            <span className={styles.resultsCount}>
-              {filteredApplicants.length} showing
-            </span>
-          </div>
+          <h2 className={styles.resultsHeading}>Candidate Leaderboard</h2>
+          <span className={styles.resultsCount}>
+            Showing {filteredApplicants.length} of {applicants?.length ?? 0} candidates
+          </span>
         </div>
 
         {isLoadingApplicants ? (
           <div style={{ padding: '48px', textAlign: 'center' }}>
             <LoadingSpinner size="md" />
-            <p style={{ marginTop: '12px', color: 'var(--color-text-secondary)' }}>
-              Loading candidate applications...
+            <p style={{ marginTop: '12px', color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+              Evaluating candidate resumes...
             </p>
           </div>
         ) : filteredApplicants.length === 0 ? (
           <div style={{ padding: '32px' }}>
             <EmptyState
               title={activeFilter === 'ALL' ? "No applicants yet" : "No matching candidates"}
-              description={activeFilter === 'ALL' ? "Candidates who apply will be analyzed and scored automatically." : "Try switching to the 'All Applicants' filter."}
+              description={activeFilter === 'ALL' ? "Candidates who apply will be analyzed and scored automatically." : "Try switching to the 'All Candidates' filter."}
             />
           </div>
         ) : (
@@ -319,25 +335,36 @@ export const ResumeShortlist: React.FC = () => {
                   const isRejected = app.status === 'REJECTED';
 
                   let badgeClass = styles.badgeWeak;
-                  if (rec.includes('STRONG') || (score ?? 0) >= 75) badgeClass = styles.badgeStrong;
-                  else if (rec.includes('MODERATE') || (score ?? 0) >= 50) badgeClass = styles.badgeModerate;
+                  let meterClass = styles.meterWeak;
+                  let recommendationLabel = 'Review Needed';
+
+                  if (rec.includes('STRONG') || (score ?? 0) >= 75) {
+                    badgeClass = styles.badgeStrong;
+                    meterClass = styles.meterStrong;
+                    recommendationLabel = 'Strong Fit';
+                  } else if (rec.includes('MODERATE') || (score ?? 0) >= 50) {
+                    badgeClass = styles.badgeModerate;
+                    meterClass = styles.meterModerate;
+                    recommendationLabel = 'Moderate Fit';
+                  }
 
                   return (
                     <tr key={app.id}>
                       {/* Candidate Column */}
                       <td>
                         <div className={styles.candidateCol}>
-                          <span className={styles.rankNum}>#{index + 1}</span>
-                          <div>
-                            <div className={styles.candidateName}>{name}</div>
-                            <div className={styles.candidateEmail}>
+                          <span className={`${styles.rankBadge} ${index === 0 ? styles.topRank1 : ''}`}>
+                            #{index + 1}
+                          </span>
+                          <Avatar name={name} size={36} round />
+                          <div className={styles.candidateDetails}>
+                            <span className={styles.candidateName}>{name}</span>
+                            <span className={styles.candidateMeta}>
                               {email}
                               {analysis?.total_years_experience != null && (
-                                <span style={{ marginLeft: '6px', color: 'var(--color-text-muted)' }}>
-                                  • {analysis.total_years_experience} yrs exp
-                                </span>
+                                <span> • {analysis.total_years_experience} yrs exp</span>
                               )}
-                            </div>
+                            </span>
                             {app.resume && (
                               <a
                                 href={getMediaUrl(app.resume.file_url || app.resume.file)}
@@ -345,7 +372,7 @@ export const ResumeShortlist: React.FC = () => {
                                 rel="noreferrer"
                                 className={styles.resumeLink}
                               >
-                                <FiExternalLink /> View Resume PDF
+                                <FiExternalLink size={11} /> View Resume PDF
                               </a>
                             )}
                           </div>
@@ -355,32 +382,24 @@ export const ResumeShortlist: React.FC = () => {
                       {/* AI Fit Score Column */}
                       <td>
                         {score != null ? (
-                          <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                          <div className={styles.scoreContainer}>
+                            <div className={styles.scoreTopRow}>
+                              <span className={styles.scoreNumber}>
                                 {score.toFixed(1)}%
                               </span>
-                              <span className={`${styles.cardFitBadge} ${badgeClass}`}>
-                                {analysis?.recommendation || 'Analyzed'}
+                              <span className={`${styles.fitBadge} ${badgeClass}`}>
+                                {recommendationLabel}
                               </span>
                             </div>
-                            <div style={{
-                              width: '100px',
-                              height: '5px',
-                              backgroundColor: 'var(--color-surface-muted, #e5e7eb)',
-                              borderRadius: '3px',
-                              overflow: 'hidden'
-                            }}>
-                              <div style={{
-                                width: `${Math.min(100, Math.max(0, score))}%`,
-                                height: '100%',
-                                backgroundColor: score >= 75 ? '#10b981' : score >= 50 ? '#f59e0b' : '#9ca3af',
-                                borderRadius: '3px'
-                              }} />
+                            <div className={styles.microMeter}>
+                              <div 
+                                className={`${styles.microMeterFill} ${meterClass}`} 
+                                style={{ width: `${Math.min(100, Math.max(0, score))}%` }} 
+                              />
                             </div>
                           </div>
                         ) : (
-                          <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                          <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
                             {analysis?.status === 'PROCESSING' ? 'Analyzing...' : 'Ready'}
                           </span>
                         )}
@@ -388,70 +407,54 @@ export const ResumeShortlist: React.FC = () => {
 
                       {/* Skills Column */}
                       <td>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', maxWidth: '280px' }}>
+                        <div className={styles.skillsContainer}>
                           {(analysis?.skills || []).slice(0, 5).map((skill: string, idx: number) => (
-                            <span
-                              key={idx}
-                              style={{
-                                fontSize: '11px',
-                                padding: '2px 6px',
-                                borderRadius: '4px',
-                                backgroundColor: 'var(--color-surface-muted, #f3f4f6)',
-                                border: '1px solid var(--color-border, #e5e7eb)',
-                                color: 'var(--color-text-primary, #374151)'
-                              }}
-                            >
+                            <span key={idx} className={styles.skillChip}>
                               {skill}
                             </span>
                           ))}
                           {(!analysis?.skills || analysis.skills.length === 0) && (
-                            <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>—</span>
+                            <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>—</span>
                           )}
                         </div>
                       </td>
 
                       {/* Status Column */}
                       <td>
-                        <span className={`${styles.statusBadge} ${
-                          isShortlisted ? styles.statusShortlisted : isRejected ? styles.statusRejected : styles.statusPending
-                        }`}>
+                        <Tag variant={getApplicationStatusVariant(app.status)}>
                           {app.status}
-                        </span>
+                        </Tag>
                       </td>
 
                       {/* Actions Column */}
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                          <button
-                            type="button"
-                            className={styles.rowCopilotBtn}
-                            onClick={() => setIsCopilotOpen(true)}
-                            title="Chat with AI Copilot about this candidate"
-                          >
-                            <FiMessageSquare /> Copilot
-                          </button>
-
-                          {!isShortlisted && (
+                        <div className={styles.actionsRow}>
+                          {isShortlisted ? (
+                            <span className={styles.shortlistedDoneBadge}>
+                              <FiCheck size={12} /> Shortlisted
+                            </span>
+                          ) : (
                             <button
                               type="button"
-                              className={styles.actionBtnShortlist}
-                              onClick={() => handleUpdateStatus(app.id, 'SHORTLISTED', name)}
+                              className={styles.shortlistActionBtn}
+                              onClick={() => handlePromptAction(app.id, 'SHORTLIST', name)}
                               disabled={updateStatusMutation.isPending}
-                              title="Shortlist Candidate"
+                              title="Shortlist this candidate"
                             >
-                              <FiCheckCircle /> Shortlist
+                              <FiCheckCircle size={13} />
+                              <span>Shortlist</span>
                             </button>
                           )}
 
                           {!isRejected && (
                             <button
                               type="button"
-                              className={styles.actionBtnReject}
-                              onClick={() => handleUpdateStatus(app.id, 'REJECTED', name)}
+                              className={styles.rejectActionBtn}
+                              onClick={() => handlePromptAction(app.id, 'REJECT', name)}
                               disabled={updateStatusMutation.isPending}
-                              title="Reject Candidate"
+                              title="Reject candidate application"
                             >
-                              <FiXCircle />
+                              <FiXCircle size={14} />
                             </button>
                           )}
                         </div>
@@ -463,7 +466,42 @@ export const ResumeShortlist: React.FC = () => {
             </table>
           </div>
         )}
+
+        <div className={styles.tableFooter}>
+          Ranked using dense semantic resume matching and automated requirement verification.
+        </div>
       </div>
+
+      {/* Confirmation Modal for Shortlist / Reject */}
+      <ConfirmModal
+        open={confirmModalState.open}
+        onClose={() => setConfirmModalState((prev) => ({ ...prev, open: false }))}
+        onConfirm={handleConfirmAction}
+        title={
+          confirmModalState.type === 'SHORTLIST'
+            ? 'Shortlist Candidate'
+            : 'Reject Application'
+        }
+        description={
+          confirmModalState.type === 'SHORTLIST' ? (
+            <span>
+              Are you sure you want to shortlist <strong>{confirmModalState.candidateName}</strong>?
+              They will be moved to the shortlisted stage in your hiring pipeline.
+            </span>
+          ) : (
+            <span>
+              Are you sure you want to reject the application for{' '}
+              <strong>{confirmModalState.candidateName}</strong>?
+            </span>
+          )
+        }
+        confirmText={
+          confirmModalState.type === 'SHORTLIST' ? 'Shortlist Candidate' : 'Reject Candidate'
+        }
+        cancelText="Cancel"
+        variant={confirmModalState.type === 'SHORTLIST' ? 'primary' : 'danger'}
+        loading={updateStatusMutation.isPending}
+      />
 
       {/* Slide-Over Drawer Overlay & Panel */}
       {isCopilotOpen && currentJob && (
@@ -475,7 +513,7 @@ export const ResumeShortlist: React.FC = () => {
               totalCandidates={applicants?.length ?? 0}
               isOpen={isCopilotOpen}
               onClose={() => setIsCopilotOpen(false)}
-              onShortlistCandidate={(appId, name) => handleUpdateStatus(appId, 'SHORTLISTED', name)}
+              onShortlistCandidate={(appId, name) => handlePromptAction(appId, 'SHORTLIST', name)}
               shortlistedIds={shortlistedIds}
             />
           </div>

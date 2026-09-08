@@ -43,3 +43,36 @@
   color: var(--color-success);
   margin-bottom: 16px;
 }
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+
+  .formCard {
+    padding: 24px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px;
+  }
+
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .formCard {
+    padding: 18px 14px;
+  }
+
+  .actions {
+    margin-top: 24px;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

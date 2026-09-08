@@ -7,7 +7,7 @@ import styles from './Layout.module.css'
 
 import { 
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
-  FiBriefcase, FiEdit, 
+  FiBriefcase, 
   FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell,
   FiShield, FiBookmark, FiCpu
 } from 'react-icons/fi'
@@ -59,7 +59,6 @@ export function AppLayout() {
       { to: '/employer/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/employer/jobs', label: 'My Jobs', icon: <FiBriefcase /> },
       { to: '/employer/shortlist', label: 'AI Shortlist', icon: <FiCpu /> },
-      { to: '/employer/jobs/new', label: 'Post a Job', icon: <FiEdit /> },
     ] : []),
     ...(!user ? [
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
@@ -70,11 +69,19 @@ export function AppLayout() {
 
   const profilePath = user?.account_type === 'SEEKER' ? '/seeker/profile' : '/employer/profile'
 
+  const dashboardPath = user?.is_staff
+    ? '/admin/dashboard'
+    : user?.account_type === 'EMPLOYER'
+    ? '/employer/dashboard'
+    : user?.account_type === 'SEEKER'
+    ? '/seeker/dashboard'
+    : '/'
+
   return (
     <div className={styles.appLayout}>
       <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.sidebarOpen : ''}`}>
         <div className={styles.logoContainer}>
-          <Link to="/" className={styles.logoText} onClick={closeMobileMenu}>
+          <Link to={dashboardPath} className={styles.logoText} onClick={closeMobileMenu}>
             Hirely<span className={styles.logoDot}></span>
           </Link>
         </div>
@@ -127,14 +134,12 @@ export function AppLayout() {
             <button className={styles.hamburger} onClick={toggleMobileMenu} aria-label="Toggle menu">
               <FiMenu size={24} />
             </button>
+            <Link to={dashboardPath} className={styles.mobileLogo} aria-label="Dashboard Home">
+              Hirely<span className={styles.logoDot}></span>
+            </Link>
           </div>
 
           <div className={styles.headerRight}>
-            {user?.account_type === 'EMPLOYER' && (
-              <Link to="/employer/jobs/new" className={styles.postJobBtn}>
-                <Button variant="primary">Post a Job</Button>
-              </Link>
-            )}
             {user && (
               <>
                 <button

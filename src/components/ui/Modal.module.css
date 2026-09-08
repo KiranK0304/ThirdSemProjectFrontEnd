@@ -81,3 +81,22 @@
     transform: translateY(0);
   }
 }
+
+@media (max-width: 480px) {
+  .modal {
+    margin: 8px;
+    padding: 18px 14px;
+    width: calc(100% - 16px);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
