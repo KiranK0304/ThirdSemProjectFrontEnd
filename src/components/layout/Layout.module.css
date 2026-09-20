@@ -424,7 +424,7 @@
 
 .guestHeader {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   width: 100%;
   max-width: 1120px;
@@ -436,8 +436,8 @@
 .guestBrandLogo {
   font-family: var(--font-heading);
   font-size: 22px;
-  font-weight: 500;
-  color: #FFFFFF;
+  font-weight: 700;
+  color: var(--color-text-primary);
   text-decoration: none;
   display: flex;
   align-items: baseline;

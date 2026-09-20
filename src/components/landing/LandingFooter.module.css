@@ -4,8 +4,8 @@
 
 .footer {
   width: 100%;
-  border-top: none;
-  background-color: #0B0B0A;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg);
   padding: 48px 32px 36px;
 }
 
@@ -32,8 +32,8 @@
 .logoText {
   font-family: var(--font-heading);
   font-size: 26px;
-  font-weight: 500;
-  color: #FFFFFF;
+  font-weight: 700;
+  color: var(--color-text-primary);
   display: flex;
   align-items: baseline;
   text-decoration: none;
@@ -53,7 +53,7 @@
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -68,7 +68,7 @@
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -79,7 +79,7 @@
 
 .bottomRow {
   padding-top: 16px;
-  border-top: none;
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -88,7 +88,7 @@
 .copyright {
   font-family: var(--font-body);
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-tertiary);
 }
 
 @media (max-width: 640px) {

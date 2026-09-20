@@ -4,7 +4,7 @@
 
 .section {
   width: 100%;
-  background-color: #0B0B0A;
+  background-color: var(--color-bg);
   padding: 100px 0 130px;
   overflow: hidden;
   /* explicitly no border-top / no underline */
@@ -65,8 +65,8 @@
 .title {
   font-family: var(--font-heading);
   font-size: clamp(38px, 5vw, 56px);
-  font-weight: 500;
-  color: #FFFFFF;
+  font-weight: 700;
+  color: var(--color-text-primary);
   line-height: 1.1;
   letter-spacing: -1.5px;
   margin: 0 0 20px 0;
@@ -80,22 +80,45 @@
 .subtitle {
   font-family: var(--font-body);
   font-size: 15px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  margin: 0 0 32px 0;
   max-width: 440px;
-  margin: 0;
 }
 
-/* ── Right Column: Numbered Steps ── */
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  padding: 8px 18px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+.indicatorText {
+  font-family: var(--font-mono, var(--font-body));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+/* ── Right Column: Numbered List ── */
 
 .rightCol {
-  width: 100%;
-}
-
-.stepsList {
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 36px;
 }
 
 .stepItem {
@@ -108,17 +131,17 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #FFFFFF;
+  background-color: var(--color-surface);
   color: var(--color-accent);
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
-  border: 1px solid rgba(217, 119, 6, 0.3);
+  border: 1px solid var(--color-border);
 }
 
 .stepContent {
@@ -136,8 +159,8 @@
 .stepTitle {
   font-family: var(--font-body);
   font-size: 17px;
-  font-weight: 500;
-  color: #FFFFFF;
+  font-weight: 600;
+  color: var(--color-text-primary);
   margin: 0;
   letter-spacing: -0.3px;
 }

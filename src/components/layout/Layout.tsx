@@ -228,6 +228,7 @@ export function AppLayout() {
 }
 
 export function GuestLayout() {
+  const { theme, toggleTheme } = useTheme()
   return (
     <div className={styles.guestLayout}>
       <div className={`${styles.corner} ${styles.cornerTL}`} aria-hidden="true" />
@@ -239,6 +240,15 @@ export function GuestLayout() {
         <Link to="/" className={styles.guestBrandLogo} title="Return to Hirely home">
           Hirely<span className={styles.guestLogoDot}></span>
         </Link>
+        <button
+          className={styles.themeToggleBtn}
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          aria-label="Toggle theme mode"
+        >
+          {theme === 'dark' ? <FiSun size={15} /> : <FiMoon size={15} />}
+          <span className={styles.themeLabel}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+        </button>
       </header>
 
       <main className={styles.guestMain}>
