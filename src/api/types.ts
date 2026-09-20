@@ -30,10 +30,55 @@ export interface Resume {
   updated_at: string
 }
 
+export interface WorkExperience {
+  id?: string
+  company: string
+  role: string
+  location?: string
+  start_date: string
+  end_date?: string
+  current?: boolean
+  description?: string
+}
+
+export interface EducationItem {
+  id?: string
+  institution: string
+  degree: string
+  field_of_study?: string
+  start_year: string
+  end_year?: string
+  grade?: string
+}
+
+export interface ProjectItem {
+  id?: string
+  title: string
+  description: string
+  technologies?: string[]
+  live_url?: string
+  github_url?: string
+}
+
+export interface SocialLinks {
+  github?: string
+  linkedin?: string
+  portfolio?: string
+  twitter?: string
+}
+
 export interface SeekerProfile {
   id: number
+  headline?: string
   phone: string
+  location?: string
   bio: string
+  years_of_experience?: number | null
+  skills?: string[]
+  experience?: WorkExperience[]
+  education?: EducationItem[]
+  projects?: ProjectItem[]
+  social_links?: SocialLinks
   resumes: Resume[]
   created_at: string
   updated_at: string
@@ -119,8 +164,16 @@ export interface ApplicationSeeker {
   id: number
   user_email: string
   user_name: string
+  headline?: string
   phone: string
+  location?: string
   bio: string
+  years_of_experience?: number | null
+  skills?: string[]
+  experience?: WorkExperience[]
+  education?: EducationItem[]
+  projects?: ProjectItem[]
+  social_links?: SocialLinks
   created_at: string
   updated_at: string
 }

@@ -14,6 +14,16 @@ import {
   FiColumns,
   FiList,
   FiSearch,
+  FiUser,
+  FiBriefcase,
+  FiBookOpen,
+  FiCode,
+  FiGlobe,
+  FiGithub,
+  FiLinkedin,
+  FiTwitter,
+  FiMapPin,
+  FiCalendar,
 } from 'react-icons/fi';
 import styles from './Applicants.module.css';
 
@@ -47,6 +57,7 @@ export const Applicants: React.FC = () => {
   const [dragOverCol, setDragOverCol] = useState<string | null>(null);
 
   const [activeLetterApp, setActiveLetterApp] = useState<Application | null>(null);
+  const [activeProfileApp, setActiveProfileApp] = useState<Application | null>(null);
   const [rejectModalState, setRejectModalState] = useState<{
     open: boolean;
     applicationId: number | null;
@@ -277,12 +288,22 @@ export const Applicants: React.FC = () => {
                           onDragEnd={handleDragEnd}
                           className={`${styles.kanbanCard} ${isDraggingThis ? styles.kanbanCardDragging : ''}`}
                         >
-                          <div className={styles.cardHeader}>
+                          <div
+                            className={styles.cardHeader}
+                            onClick={() => setActiveProfileApp(app)}
+                            style={{ cursor: 'pointer' }}
+                            title="Click to inspect candidate portfolio"
+                          >
                             <Avatar name={applicantName} size={32} round />
                             <div className={styles.cardNameBlock}>
                               <span className={styles.cardName} title={applicantName}>
                                 {applicantName}
                               </span>
+                              {app.seeker?.headline && (
+                                <span style={{ fontSize: '11px', color: 'var(--color-accent, #d97706)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block', maxWidth: '170px' }}>
+                                  {app.seeker.headline}
+                                </span>
+                              )}
                               <span className={styles.cardEmail} title={applicantEmail}>
                                 {applicantEmail}
                               </span>
@@ -304,6 +325,15 @@ export const Applicants: React.FC = () => {
                           <div className={styles.cardMetaRow}>
                             <span>{formatDate(app.created_at)}</span>
                             <div className={styles.cardBtnGroup}>
+                              <button
+                                type="button"
+                                className={styles.cardIconBtn}
+                                onClick={() => setActiveProfileApp(app)}
+                                title="Inspect Candidate Portfolio"
+                              >
+                                <FiUser size={12} />
+                                <span>Profile</span>
+                              </button>
                               {hasResume && (
                                 <a
                                   href={getMediaUrl(app.resume!.file_url)}
@@ -378,10 +408,20 @@ export const Applicants: React.FC = () => {
                   return (
                     <tr key={app.id}>
                       <td>
-                        <div className={styles.candidateCell}>
+                        <div
+                          className={styles.candidateCell}
+                          onClick={() => setActiveProfileApp(app)}
+                          style={{ cursor: 'pointer' }}
+                          title="Click to inspect candidate portfolio"
+                        >
                           <Avatar name={applicantName} size={36} round />
                           <div className={styles.candidateInfo}>
                             <span className={styles.candidateName}>{applicantName}</span>
+                            {app.seeker?.headline && (
+                              <span style={{ fontSize: '11px', color: 'var(--color-accent, #d97706)', display: 'block', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {app.seeker.headline}
+                              </span>
+                            )}
                             <span className={styles.candidateEmail}>{applicantEmail}</span>
                           </div>
                         </div>
@@ -534,6 +574,217 @@ export const Applicants: React.FC = () => {
         variant="danger"
         loading={updateStatus.isPending}
       />
+
+      {/* Candidate Career Portfolio Modal */}
+      <Modal
+        open={!!activeProfileApp}
+        onClose={() => setActiveProfileApp(null)}
+        title="Candidate Career Portfolio"
+        maxWidth="720px"
+        actions={
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', width: '100%' }}>
+            {activeProfileApp?.resume?.file_url ? (
+              <a
+                href={getMediaUrl(activeProfileApp.resume.file_url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none' }}
+              >
+                <Button variant="secondary" size="sm">
+                  <FiFileText size={13} />
+                  <span>Open Attached Resume</span>
+                </Button>
+              </a>
+            ) : <span />}
+            <Button variant="primary" size="sm" onClick={() => setActiveProfileApp(null)}>
+              Close Portfolio
+            </Button>
+          </div>
+        }
+      >
+        {activeProfileApp && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '4px' }}>
+            {/* Candidate Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--color-border, rgba(255,255,255,0.08))' }}>
+              <Avatar
+                name={activeProfileApp.seeker?.user_name || activeProfileApp.seeker?.user_email || 'Applicant'}
+                size={52}
+                round
+              />
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 3px', fontSize: '18px', color: 'var(--color-text-primary)' }}>
+                  {activeProfileApp.seeker?.user_name || 'Candidate'}
+                </h3>
+                {activeProfileApp.seeker?.headline && (
+                  <p style={{ margin: '0 0 4px', fontSize: '13px', color: 'var(--color-accent, #d97706)', fontWeight: 500 }}>
+                    {activeProfileApp.seeker.headline}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <span>{activeProfileApp.seeker?.user_email}</span>
+                  {activeProfileApp.seeker?.phone && <span>• {activeProfileApp.seeker.phone}</span>}
+                  {activeProfileApp.seeker?.location && <span>• {activeProfileApp.seeker.location}</span>}
+                  {activeProfileApp.seeker?.years_of_experience != null && <span>• {activeProfileApp.seeker.years_of_experience} yrs exp</span>}
+                </div>
+              </div>
+              {activeProfileApp.analysis?.overall_score != null && (
+                <div style={{ textAlign: 'center', padding: '8px 14px', borderRadius: '8px', background: 'rgba(217, 119, 6, 0.12)', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-accent, #d97706)' }}>
+                    {activeProfileApp.analysis.overall_score}%
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Match Fit</div>
+                </div>
+              )}
+            </div>
+
+            {/* Social Links */}
+            {activeProfileApp.seeker?.social_links && Object.values(activeProfileApp.seeker.social_links).some(Boolean) && (
+              <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', fontSize: '13px' }}>
+                {activeProfileApp.seeker.social_links.github && (
+                  <a href={activeProfileApp.seeker.social_links.github} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent, #d97706)' }}>
+                    <FiGithub size={14} /> GitHub
+                  </a>
+                )}
+                {activeProfileApp.seeker.social_links.linkedin && (
+                  <a href={activeProfileApp.seeker.social_links.linkedin} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent, #d97706)' }}>
+                    <FiLinkedin size={14} /> LinkedIn
+                  </a>
+                )}
+                {activeProfileApp.seeker.social_links.portfolio && (
+                  <a href={activeProfileApp.seeker.social_links.portfolio} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent, #d97706)' }}>
+                    <FiGlobe size={14} /> Portfolio
+                  </a>
+                )}
+                {activeProfileApp.seeker.social_links.twitter && (
+                  <a href={activeProfileApp.seeker.social_links.twitter} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'var(--color-accent, #d97706)' }}>
+                    <FiTwitter size={14} /> Twitter/X
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Bio */}
+            {activeProfileApp.seeker?.bio && (
+              <div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Professional Summary
+                </h4>
+                <p style={{ margin: 0, fontSize: '13.5px', color: 'var(--color-text-primary)', lineHeight: 1.55 }}>
+                  {activeProfileApp.seeker.bio}
+                </p>
+              </div>
+            )}
+
+            {/* Skills */}
+            {activeProfileApp.seeker?.skills && activeProfileApp.seeker.skills.length > 0 && (
+              <div>
+                <h4 style={{ margin: '0 0 8px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Core Skills
+                </h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {activeProfileApp.seeker.skills.map((skill) => (
+                    <span key={skill} style={{ fontSize: '12px', background: 'rgba(217, 119, 6, 0.12)', border: '1px solid rgba(217, 119, 6, 0.25)', color: 'var(--color-accent, #d97706)', padding: '3px 10px', borderRadius: '16px' }}>
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Work Experience */}
+            {activeProfileApp.seeker?.experience && activeProfileApp.seeker.experience.length > 0 && (
+              <div>
+                <h4 style={{ margin: '0 0 10px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Work Experience
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {activeProfileApp.seeker.experience.map((exp, i) => (
+                    <div key={i} style={{ padding: '12px', borderRadius: '8px', background: 'var(--color-surface-muted, #1a1a1a)', border: '1px solid var(--color-border, rgba(255,255,255,0.06))' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <div>
+                          <strong style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{exp.role}</strong>
+                          <span style={{ fontSize: '13px', color: 'var(--color-accent, #d97706)', display: 'block' }}>{exp.company}</span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                          {exp.start_date} – {exp.current ? 'Present' : exp.end_date || 'Present'}
+                        </span>
+                      </div>
+                      {exp.description && (
+                        <p style={{ margin: '6px 0 0', fontSize: '12.5px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                          {exp.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education */}
+            {activeProfileApp.seeker?.education && activeProfileApp.seeker.education.length > 0 && (
+              <div>
+                <h4 style={{ margin: '0 0 10px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Education
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {activeProfileApp.seeker.education.map((edu, i) => (
+                    <div key={i} style={{ padding: '10px 12px', borderRadius: '8px', background: 'var(--color-surface-muted, #1a1a1a)', border: '1px solid var(--color-border, rgba(255,255,255,0.06))' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <strong style={{ fontSize: '13.5px', color: 'var(--color-text-primary)' }}>{edu.degree}</strong>
+                          <span style={{ fontSize: '12.5px', color: 'var(--color-text-secondary)', display: 'block' }}>{edu.institution} {edu.field_of_study ? `• ${edu.field_of_study}` : ''}</span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                          {edu.start_year} – {edu.end_year || 'Present'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Featured Projects */}
+            {activeProfileApp.seeker?.projects && activeProfileApp.seeker.projects.length > 0 && (
+              <div>
+                <h4 style={{ margin: '0 0 10px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Featured Projects
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {activeProfileApp.seeker.projects.map((proj, i) => (
+                    <div key={i} style={{ padding: '12px', borderRadius: '8px', background: 'var(--color-surface-muted, #1a1a1a)', border: '1px solid var(--color-border, rgba(255,255,255,0.06))' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <strong style={{ fontSize: '13.5px', color: 'var(--color-text-primary)' }}>{proj.title}</strong>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {proj.live_url && (
+                            <a href={proj.live_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '11.5px', color: 'var(--color-accent, #d97706)' }}>Demo</a>
+                          )}
+                          {proj.github_url && (
+                            <a href={proj.github_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '11.5px', color: 'var(--color-accent, #d97706)' }}>Code</a>
+                          )}
+                        </div>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: 'var(--color-text-secondary)' }}>{proj.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Cover Letter */}
+            {activeProfileApp.cover_letter && (
+              <div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '12.5px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-secondary)' }}>
+                  Cover Letter
+                </h4>
+                <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--color-surface-muted, #1a1a1a)', border: '1px solid var(--color-border, rgba(255,255,255,0.06))', fontSize: '13px', color: 'var(--color-text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.55 }}>
+                  {activeProfileApp.cover_letter}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
