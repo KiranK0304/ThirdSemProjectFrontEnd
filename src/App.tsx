@@ -21,6 +21,7 @@ import EmployerApplicants from '@/pages/employer/Applicants'
 import EmployerProfile from '@/pages/employer/Profile'
 import ResumeShortlist from '@/pages/employer/ResumeShortlist'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
+import Messages from '@/pages/messages/Messages'
 
 function EditJobRedirect() {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +65,16 @@ function App() {
           element={
             <RequireAuth role="ADMIN">
               <AdminDashboard />
+            </RequireAuth>
+          }
+        />
+
+        {/* Messaging route for authenticated users */}
+        <Route
+          path="/messages"
+          element={
+            <RequireAuth>
+              <Messages />
             </RequireAuth>
           }
         />

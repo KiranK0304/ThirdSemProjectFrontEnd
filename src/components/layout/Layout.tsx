@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useMarkAllNotificationsRead, useMarkNotificationRead, useNotifications, useUnreadNotificationCount } from '@/hooks/queries/useNotificationQueries'
 import { Button, Avatar, ConfirmModal } from '@/components/ui'
 import styles from './Layout.module.css'
@@ -9,11 +10,12 @@ import {
   FiGrid, FiSearch, FiFileText, FiMessageSquare, 
   FiBriefcase, 
   FiLogIn, FiUserPlus, FiLogOut, FiMenu, FiBell,
-  FiShield, FiBookmark, FiCpu
+  FiShield, FiBookmark, FiCpu, FiSun, FiMoon
 } from 'react-icons/fi'
 
 export function AppLayout() {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -54,11 +56,13 @@ export function AppLayout() {
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
       { to: '/seeker/saved-jobs', label: 'Saved Jobs', icon: <FiBookmark /> },
       { to: '/seeker/applications', label: 'My Applications', icon: <FiFileText /> },
+      { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
     ] : []),
     ...(user?.account_type === 'EMPLOYER' ? [
       { to: '/employer/dashboard', label: 'Dashboard', icon: <FiGrid /> },
       { to: '/employer/jobs', label: 'My Jobs', icon: <FiBriefcase /> },
       { to: '/employer/shortlist', label: 'AI Shortlist', icon: <FiCpu /> },
+      { to: '/messages', label: 'Messages', icon: <FiMessageSquare /> },
     ] : []),
     ...(!user ? [
       { to: '/jobs', label: 'Find Jobs', icon: <FiSearch /> },
@@ -140,6 +144,16 @@ export function AppLayout() {
           </div>
 
           <div className={styles.headerRight}>
+            <button
+              className={styles.themeToggleBtn}
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              aria-label="Toggle theme mode"
+            >
+              {theme === 'dark' ? <FiSun size={15} /> : <FiMoon size={15} />}
+              <span className={styles.themeLabel}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+            </button>
+
             {user && (
               <>
                 <button

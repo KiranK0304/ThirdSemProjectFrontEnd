@@ -222,7 +222,34 @@
 .headerRight {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
+}
+
+.themeToggleBtn {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.themeToggleBtn:hover {
+  color: var(--color-accent-hover);
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.themeLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 .notificationBtn {

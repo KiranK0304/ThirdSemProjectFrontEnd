@@ -9,7 +9,7 @@ import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { extractApiError } from '@/api/utils'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
 import { formatEmploymentType, formatStatus, getApplicationStatusVariant } from '@/utils/format'
-import { FiUploadCloud, FiFileText, FiAlertCircle, FiArrowLeft, FiMapPin, FiExternalLink, FiClock } from 'react-icons/fi'
+import { FiUploadCloud, FiFileText, FiAlertCircle, FiArrowLeft, FiMapPin, FiExternalLink, FiClock, FiMessageSquare } from 'react-icons/fi'
 import styles from './JobDetail.module.css'
 
 export default function JobDetail() {
@@ -193,11 +193,31 @@ export default function JobDetail() {
                 <Link to={`/seeker/applications/${existingApplication.id}`}>
                   <Button variant="secondary">View Application</Button>
                 </Link>
+                {user?.account_type === 'SEEKER' && job.employer?.id && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
+                  >
+                    <FiMessageSquare size={14} />
+                    <span>Message Employer</span>
+                  </Button>
+                )}
               </div>
             ) : (
-              <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
-                Apply Now
-              </Button>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {user?.account_type === 'SEEKER' && job.employer?.id && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
+                  >
+                    <FiMessageSquare size={14} />
+                    <span>Message</span>
+                  </Button>
+                )}
+                <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+                  Apply Now
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -228,11 +248,31 @@ export default function JobDetail() {
               <Link to={`/seeker/applications/${existingApplication.id}`}>
                 <Button variant="secondary">View Application</Button>
               </Link>
+              {user?.account_type === 'SEEKER' && job.employer?.id && (
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
+                >
+                  <FiMessageSquare size={14} />
+                  <span>Message Employer</span>
+                </Button>
+              )}
             </div>
           ) : (
-            <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
-              Apply Now
-            </Button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {user?.account_type === 'SEEKER' && job.employer?.id && (
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate('/messages', { state: { employerId: job.employer.id } })}
+                >
+                  <FiMessageSquare size={14} />
+                  <span>Message Employer</span>
+                </Button>
+              )}
+              <Button variant="primary" onClick={() => setIsApplyModalOpen(true)}>
+                Apply Now
+              </Button>
+            </div>
           )}
         </div>
       </Card>

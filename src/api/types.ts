@@ -343,3 +343,4 @@ export interface SendMessageResponse {
   user_message: CopilotMessageItem
   assistant_message: CopilotMessageItem
 }
+
