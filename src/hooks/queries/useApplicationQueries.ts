@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   applyToJobApi, getSeekerApplicationsApi, getSeekerApplicationApi, 
   withdrawApplicationApi, getJobApplicantsApi, getEmployerApplicationsApi, 
-  updateApplicationStatusApi, getSeekerInterviewsApi, createOrUpdateJobOfferApi, decideJobOfferApi
+  updateApplicationStatusApi, getSeekerInterviewsApi, createOrUpdateJobOfferApi, decideJobOfferApi,
+  getRecruitmentAnalyticsApi
 } from '../../api/applications';
-import type { Application, JobOffer } from '../../api/types';
+import type { Application, JobOffer, RecruitmentAnalytics } from '../../api/types';
 
 export const useSeekerApplications = (enabled = true) => {
   return useQuery({
@@ -138,5 +139,13 @@ export const useDecideOffer = () => {
       queryClient.invalidateQueries({ queryKey: ['seeker', 'applications'] });
       queryClient.invalidateQueries({ queryKey: ['employer'] });
     },
+  });
+};
+
+export const useRecruitmentAnalytics = () => {
+  return useQuery({
+    queryKey: ['employer', 'analytics'],
+    queryFn: () => getRecruitmentAnalyticsApi(),
+    staleTime: 60 * 1000,
   });
 };

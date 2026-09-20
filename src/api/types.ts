@@ -443,3 +443,38 @@ export interface SendMessageResponse {
   assistant_message: CopilotMessageItem
 }
 
+export interface FunnelStage {
+  stage: string
+  count: number
+  percentage: number
+}
+
+export interface JobAnalyticsBreakdown {
+  job_id: number
+  title: string
+  status: string
+  applicant_count: number
+  shortlisted_count: number
+  offered_count: number
+  created_at: string
+}
+
+export interface RecruitmentAnalytics {
+  summary: {
+    total_jobs: number
+    active_jobs: number
+    total_applicants: number
+    submitted_count: number
+    under_review_count: number
+    shortlisted_count: number
+    offered_count: number
+    rejected_count: number
+    offers_accepted_count: number
+    shortlist_rate: number
+    offer_rate: number
+    acceptance_rate: number
+  }
+  funnel: FunnelStage[]
+  jobs_breakdown: JobAnalyticsBreakdown[]
+}
+

@@ -14,6 +14,14 @@
   gap: 16px;
 }
 
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .headerTitle {
   font-family: 'Fraunces', serif;
   font-weight: 500;
@@ -27,7 +35,39 @@
   font-weight: 400;
   font-size: 16px;
   color: var(--color-text-secondary);
-  margin: 0;
+  margin: 4px 0 0 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.csvExportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.csvExportBtn:hover:not(:disabled) {
+  background-color: var(--color-surface-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--color-border-hover, #64748b);
+}
+
+.csvExportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .warningCard {
@@ -52,36 +92,327 @@
 .statsRow {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+  gap: 20px;
 }
 
 .statCard {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  position: relative;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.statIconWrapper {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  gap: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--color-surface-muted, rgba(99, 102, 241, 0.1));
+  color: var(--color-primary, #6366f1);
+  margin-bottom: 4px;
+}
+
+.statIcon {
+  font-size: 18px;
 }
 
 .statNumber {
   font-family: 'Fraunces', serif;
-  font-weight: 500;
-  font-size: 48px;
+  font-weight: 600;
+  font-size: 36px;
   color: var(--color-text);
   margin: 0;
+  line-height: 1.1;
 }
 
 .statLabel {
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   margin: 0;
+}
+
+/* ── Recruitment Funnel Visualizer ── */
+.funnelCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.funnelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.funnelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-primary, #6366f1);
+  margin-bottom: 6px;
+}
+
+.funnelTitle {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.funnelSubtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 4px 0 0 0;
+}
+
+.funnelSummaryPills {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pillStat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-surface-muted, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.pillLabel {
+  color: var(--color-text-secondary);
+}
+
+.pillValue {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.funnelStages {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.funnelStageRow {
+  display: grid;
+  grid-template-columns: 240px 1fr 110px;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm, 6px);
+  background-color: var(--color-surface-muted, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--color-border);
+}
+
+.funnelStageInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.funnelStageNumber {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.funnelStageText {
+  display: flex;
+  flex-direction: column;
+}
+
+.funnelStageName {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.funnelStageCount {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.funnelBarContainer {
+  height: 12px;
+  background-color: var(--color-surface);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.funnelBarFill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+}
+
+.stageColor_APPLIED {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.stageColor_REVIEWED {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.stageColor_SHORTLISTED {
+  background: linear-gradient(90deg, #06b6d4, #22d3ee);
+}
+
+.stageColor_OFFERED {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stageColor_ACCEPTED {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.funnelStageRate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ratePercent {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.rateLabel {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+/* ── Per-Job Breakdown Table ── */
+.tableCard {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.jobTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.jobTable th {
+  background-color: var(--color-surface-muted, rgba(255, 255, 255, 0.03));
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.jobTable td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+  color: var(--color-text);
+}
+
+.jobTable tr:last-child td {
+  border-bottom: none;
+}
+
+.tableJobTitle {
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.tableJobTitle:hover {
+  text-decoration: underline;
+  color: var(--color-primary, #6366f1);
+}
+
+.acceptedCount {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.tableActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.smallExportBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.smallExportBtn:hover:not(:disabled) {
+  background-color: var(--color-surface-hover, rgba(255, 255, 255, 0.08));
+  border-color: var(--color-border-hover, #94a3b8);
+}
+
+.smallExportBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Sections Common */
@@ -263,6 +594,27 @@
     border-top: 1px solid var(--color-border);
     padding-top: 12px;
     width: 100%;
+  }
+
+  .funnelStageRow {
+    grid-template-columns: 1fr auto;
+    row-gap: 10px;
+  }
+
+  .funnelBarContainer {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .headerTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .applicantMeta {

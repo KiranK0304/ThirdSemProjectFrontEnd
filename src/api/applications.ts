@@ -1,5 +1,5 @@
 import { api } from './client';
-import { Application, Interview, JobOffer } from './types';
+import { Application, Interview, JobOffer, RecruitmentAnalytics } from './types';
 
 export const applyToJobApi = async (jobId: number, data: { cover_letter?: string; resume_id?: number }): Promise<Application> => {
   const response = await api.post<Application>(`/api/jobs/${jobId}/apply/`, data);
@@ -71,4 +71,28 @@ export const decideJobOfferApi = async (
     data,
   );
   return response.data;
+};
+
+export const getRecruitmentAnalyticsApi = async (): Promise<RecruitmentAnalytics> => {
+  const response = await api.get<RecruitmentAnalytics>('/api/employer/analytics/');
+  return response.data;
+};
+
+export const downloadApplicantsCsvApi = async (jobId?: number): Promise<Blob> => {
+  const url = jobId
+    ? `/api/employer/export/csv/?job_id=${jobId}`
+    : '/api/employer/export/csv/';
+  const response = await api.get(url, { responseType: 'blob' });
+  return response.data;
+};
+
+export const triggerCsvDownload = (blob: Blob, filename = 'applicants_export.csv') => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
 };

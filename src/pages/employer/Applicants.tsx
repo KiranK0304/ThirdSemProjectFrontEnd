@@ -7,6 +7,7 @@ import { formatDate } from '@/utils/date';
 import { getApplicationStatusVariant, getMediaUrl } from '@/utils/format';
 import { extractApiError } from '@/api/utils';
 import { Application } from '@/api/types';
+import { downloadApplicantsCsvApi, triggerCsvDownload } from '@/api/applications';
 import {
   FiArrowLeft,
   FiFileText,
@@ -15,6 +16,7 @@ import {
   FiColumns,
   FiList,
   FiSearch,
+  FiDownload,
   FiUser,
   FiBriefcase,
   FiBookOpen,
@@ -130,6 +132,21 @@ export const Applicants: React.FC = () => {
     candidateName: '',
   });
   const [rejectionNote, setRejectionNote] = useState<string>('');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCsv = async () => {
+    if (!jobId) return;
+    try {
+      setIsExporting(true);
+      const blob = await downloadApplicantsCsvApi(Number(jobId));
+      const safeTitle = (job?.title || 'job').toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 20);
+      triggerCsvDownload(blob, `applicants_${safeTitle}_${jobId}.csv`);
+    } catch (err) {
+      console.error('Failed to export applicants CSV', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Filtered applicants by search
   const filteredApplicants = useMemo(() => {
@@ -278,25 +295,38 @@ export const Applicants: React.FC = () => {
           />
         </div>
 
-        <div className={styles.viewToggleGroup}>
+        <div className={styles.controlsRight}>
           <button
             type="button"
-            className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleBtnActive : ''}`}
-            onClick={() => setViewMode('kanban')}
-            title="Kanban Pipeline View"
+            className={styles.csvExportBtn}
+            onClick={handleExportCsv}
+            disabled={isExporting || !applicants || applicants.length === 0}
+            title="Download candidate roster for this position as CSV"
           >
-            <FiColumns size={14} />
-            <span>Kanban Board</span>
+            <FiDownload size={14} />
+            <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
-          <button
-            type="button"
-            className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleBtnActive : ''}`}
-            onClick={() => setViewMode('table')}
-            title="Table List View"
-          >
-            <FiList size={14} />
-            <span>Table View</span>
-          </button>
+
+          <div className={styles.viewToggleGroup}>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${viewMode === 'kanban' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => setViewMode('kanban')}
+              title="Kanban Pipeline View"
+            >
+              <FiColumns size={14} />
+              <span>Kanban Board</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${viewMode === 'table' ? styles.viewToggleBtnActive : ''}`}
+              onClick={() => setViewMode('table')}
+              title="Table List View"
+            >
+              <FiList size={14} />
+              <span>Table View</span>
+            </button>
+          </div>
         </div>
       </div>
 
