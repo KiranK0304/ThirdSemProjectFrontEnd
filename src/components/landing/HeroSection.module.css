@@ -70,7 +70,16 @@
 .navRight {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.navDivider {
+  width: 1px;
+  height: 22px;
+  background-color: var(--color-border);
+  margin: 0 2px;
 }
 
 .themeToggleBtn {
@@ -88,6 +97,8 @@
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .themeToggleBtn:hover {
@@ -102,7 +113,9 @@
 .authButtons {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .signInLink {
@@ -562,6 +575,19 @@
 }
 
 /* ── Responsive ── */
+@media (max-width: 1140px) {
+  .navLeft {
+    gap: 20px;
+  }
+  .navLinks {
+    gap: 16px;
+  }
+  .navLinks a[href^="#features"],
+  .navLinks a[href^="#how-it-works"] {
+    display: none;
+  }
+}
+
 @media (max-width: 992px) {
   .heroContentGrid {
     grid-template-columns: 1fr;
@@ -570,6 +596,10 @@
 
   .heroPreview {
     order: 2;
+  }
+
+  .navLinks a[href^="#ai-interactive"] {
+    display: none;
   }
 }
 
@@ -599,5 +629,19 @@
   .statsStrip {
     flex-wrap: wrap;
     gap: 16px;
+  }
+}
+
+@media (max-width: 580px) {
+  .signInLink {
+    display: none;
+  }
+
+  .themeLabel {
+    display: none;
+  }
+
+  .themeToggleBtn {
+    padding: 6px 8px;
   }
 }

@@ -63,16 +63,6 @@ export default function HeroSection() {
         </div>
 
         <div className={styles.navRight}>
-          <button
-            className={styles.themeToggleBtn}
-            onClick={toggleTheme}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-            aria-label="Toggle theme mode"
-          >
-            {theme === 'dark' ? <FiSun size={14} /> : <FiMoon size={14} />}
-            <span className={styles.themeLabel}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
-          </button>
-
           {user ? (
             <button
               className={styles.dashboardBtn}
@@ -93,6 +83,18 @@ export default function HeroSection() {
               </button>
             </div>
           )}
+
+          <div className={styles.navDivider} aria-hidden="true" />
+
+          <button
+            className={styles.themeToggleBtn}
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label="Toggle theme mode"
+          >
+            {theme === 'dark' ? <FiSun size={14} /> : <FiMoon size={14} />}
+            <span className={styles.themeLabel}>{theme === 'dark' ? 'LIGHT' : 'DARK'}</span>
+          </button>
         </div>
       </header>
 
