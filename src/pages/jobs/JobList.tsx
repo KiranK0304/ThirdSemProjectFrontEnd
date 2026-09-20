@@ -226,7 +226,21 @@ export default function JobList() {
                           <SaveJobButton jobId={job.id} stopPropagation />
                         </div>
                         <div className={styles.companyMeta}>
-                          <span className={styles.companyName}>{companyName}</span>
+                          {job.employer?.id ? (
+                            <span
+                              className={styles.companyName}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/companies/${job.employer.id}`);
+                              }}
+                              style={{ cursor: 'pointer' }}
+                              title="View company profile"
+                            >
+                              {companyName}
+                            </span>
+                          ) : (
+                            <span className={styles.companyName}>{companyName}</span>
+                          )}
                           {job.location && (
                             <>
                               <span className={styles.metaDot}>•</span>

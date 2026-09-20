@@ -22,6 +22,7 @@ import EmployerProfile from '@/pages/employer/Profile'
 import ResumeShortlist from '@/pages/employer/ResumeShortlist'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import Messages from '@/pages/messages/Messages'
+import CompanyDetail from '@/pages/companies/CompanyDetail'
 
 function EditJobRedirect() {
   const { id } = useParams<{ id: string }>();
@@ -58,6 +59,7 @@ function App() {
         {/* Public routes */}
         <Route path="/jobs" element={<JobList />} />
         <Route path="/jobs/:id" element={<JobDetail />} />
+        <Route path="/companies/:id" element={<CompanyDetail />} />
 
         {/* Admin routes */}
         <Route

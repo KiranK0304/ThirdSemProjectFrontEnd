@@ -161,7 +161,13 @@ export default function JobDetail() {
             <div>
               <h1 className={styles.title}>{job.title}</h1>
               <div className={styles.companyMeta}>
-                <span className={styles.companyName}>{companyName}</span>
+                {job.employer?.id ? (
+                  <Link to={`/companies/${job.employer.id}`} className={styles.companyName} title="View company profile">
+                    {companyName}
+                  </Link>
+                ) : (
+                  <span className={styles.companyName}>{companyName}</span>
+                )}
                 {job.location && (
                   <>
                     <span className={styles.metaDot}>•</span>

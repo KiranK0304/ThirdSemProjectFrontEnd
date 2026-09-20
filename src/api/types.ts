@@ -1,11 +1,23 @@
 export interface EmployerProfile {
   id: number
   company_name: string
+  tagline?: string
   website: string
   description: string
+  company_size?: string
+  headquarters?: string
+  founded_year?: number | null
+  logo_url?: string
+  perks?: string[]
+  social_linkedin?: string
+  social_twitter?: string
   verification_status: 'PENDING' | 'APPROVED' | 'REJECTED'
   created_at: string
   updated_at: string
+}
+
+export interface CompanyDetail extends EmployerProfile {
+  active_jobs: Job[]
 }
 
 export interface Resume {
@@ -66,8 +78,10 @@ export interface RegisterRequest {
 export interface JobEmployer {
   id: number
   company_name: string
+  tagline?: string
   website: string
   description: string
+  logo_url?: string
 }
 
 export type WorkplaceType = 'ON_SITE' | 'HYBRID' | 'REMOTE';
