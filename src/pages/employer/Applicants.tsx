@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Tag, Avatar, Modal, ConfirmModal, Button, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
 import { useEmployerJob } from '@/hooks/queries/useJobQueries';
-import { useEmployerJobApplicants, useUpdateApplicationStatus } from '@/hooks/queries/useApplicationQueries';
+import { useEmployerJobApplicants, useUpdateApplicationStatus, useCreateOrUpdateOffer } from '@/hooks/queries/useApplicationQueries';
 import { formatDate } from '@/utils/date';
 import { getApplicationStatusVariant, getMediaUrl } from '@/utils/format';
+import { extractApiError } from '@/api/utils';
 import { Application } from '@/api/types';
 import {
   FiArrowLeft,
@@ -24,6 +25,8 @@ import {
   FiTwitter,
   FiMapPin,
   FiCalendar,
+  FiAward,
+  FiDollarSign,
 } from 'react-icons/fi';
 import styles from './Applicants.module.css';
 
@@ -50,6 +53,7 @@ export const Applicants: React.FC = () => {
   const { data: job, isLoading: isLoadingJob } = useEmployerJob(jobId);
   const { data: applicants, isLoading: isLoadingApplicants, error, refetch } = useEmployerJobApplicants(jobId);
   const updateStatus = useUpdateApplicationStatus();
+  const createOrUpdateOffer = useCreateOrUpdateOffer();
 
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [searchFilter, setSearchFilter] = useState('');
@@ -58,6 +62,64 @@ export const Applicants: React.FC = () => {
 
   const [activeLetterApp, setActiveLetterApp] = useState<Application | null>(null);
   const [activeProfileApp, setActiveProfileApp] = useState<Application | null>(null);
+  const [activeOfferApp, setActiveOfferApp] = useState<Application | null>(null);
+
+  // Offer form fields
+  const [offerJobTitle, setOfferJobTitle] = useState('');
+  const [offerBaseSalary, setOfferBaseSalary] = useState('');
+  const [offerBonus, setOfferBonus] = useState('');
+  const [offerEquity, setOfferEquity] = useState('');
+  const [offerStartDate, setOfferStartDate] = useState('');
+  const [offerExpirationDate, setOfferExpirationDate] = useState('');
+  const [offerTerms, setOfferTerms] = useState('');
+  const [offerSuccessMsg, setOfferSuccessMsg] = useState('');
+  const [offerErrorMsg, setOfferErrorMsg] = useState('');
+
+  const openOfferModal = (app: Application) => {
+    setActiveOfferApp(app);
+    setOfferSuccessMsg('');
+    setOfferErrorMsg('');
+    const o = app.offer;
+    setOfferJobTitle(o?.job_title || job?.title || '');
+    setOfferBaseSalary(o?.base_salary || '');
+    setOfferBonus(o?.bonus || '');
+    setOfferEquity(o?.equity || '');
+    setOfferStartDate(o?.start_date || '');
+    setOfferExpirationDate(o?.expiration_date || '');
+    setOfferTerms(o?.additional_terms || '');
+  };
+
+  const handleSaveOffer = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!activeOfferApp) return;
+    if (!offerBaseSalary.trim()) {
+      setOfferErrorMsg('Please specify the base salary or compensation rate.');
+      return;
+    }
+    setOfferErrorMsg('');
+    try {
+      await createOrUpdateOffer.mutateAsync({
+        applicationId: activeOfferApp.id,
+        data: {
+          job_title: offerJobTitle.trim() || undefined,
+          base_salary: offerBaseSalary.trim(),
+          bonus: offerBonus.trim() || undefined,
+          equity: offerEquity.trim() || undefined,
+          start_date: offerStartDate || undefined,
+          expiration_date: offerExpirationDate || undefined,
+          additional_terms: offerTerms.trim() || undefined,
+        },
+      });
+      setOfferSuccessMsg('Official job offer extended successfully!');
+      setTimeout(() => {
+        setActiveOfferApp(null);
+        setOfferSuccessMsg('');
+      }, 1800);
+    } catch (err) {
+      setOfferErrorMsg(extractApiError(err));
+    }
+  };
+
   const [rejectModalState, setRejectModalState] = useState<{
     open: boolean;
     applicationId: number | null;
@@ -334,6 +396,24 @@ export const Applicants: React.FC = () => {
                                 <FiUser size={12} />
                                 <span>Profile</span>
                               </button>
+                              <button
+                                type="button"
+                                className={styles.cardIconBtn}
+                                onClick={() => openOfferModal(app)}
+                                title={app.offer ? `Offer Status: ${app.offer.status}` : 'Extend Job Offer'}
+                                style={
+                                  app.offer?.status === 'ACCEPTED'
+                                    ? { color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.4)' }
+                                    : app.offer?.status === 'DECLINED'
+                                    ? { color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.4)' }
+                                    : app.offer
+                                    ? { color: '#a78bfa', borderColor: 'rgba(167, 139, 250, 0.4)' }
+                                    : undefined
+                                }
+                              >
+                                <FiDollarSign size={12} />
+                                <span>{app.offer ? app.offer.status : 'Offer'}</span>
+                              </button>
                               {hasResume && (
                                 <a
                                   href={getMediaUrl(app.resume!.file_url)}
@@ -393,6 +473,7 @@ export const Applicants: React.FC = () => {
                   <th>Applied Date</th>
                   <th>Resume</th>
                   <th>Cover Letter</th>
+                  <th>Job Offer</th>
                   <th>Current Status</th>
                   <th style={{ textAlign: 'right' }}>Update Status</th>
                 </tr>
@@ -463,6 +544,31 @@ export const Applicants: React.FC = () => {
                         ) : (
                           <span className={styles.noLetterText}>None provided</span>
                         )}
+                      </td>
+
+                      <td>
+                        <Button
+                          variant={app.offer ? 'secondary' : 'ghost'}
+                          size="sm"
+                          onClick={() => openOfferModal(app)}
+                          title={app.offer ? `Offer: ${app.offer.status}` : 'Extend Job Offer'}
+                          style={{
+                            gap: '5px',
+                            fontSize: '11.5px',
+                            padding: '4px 10px',
+                            color:
+                              app.offer?.status === 'ACCEPTED'
+                                ? '#10b981'
+                                : app.offer?.status === 'DECLINED'
+                                ? '#f87171'
+                                : app.offer
+                                ? '#a78bfa'
+                                : undefined,
+                          }}
+                        >
+                          <FiDollarSign size={12} />
+                          <span>{app.offer ? app.offer.status : 'Extend Offer'}</span>
+                        </Button>
                       </td>
 
                       <td>
@@ -783,6 +889,187 @@ export const Applicants: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+      </Modal>
+
+      {/* Extend / Edit Job Offer Modal */}
+      <Modal
+        open={!!activeOfferApp}
+        onClose={() => setActiveOfferApp(null)}
+        title={activeOfferApp?.offer ? 'Manage Official Job Offer' : 'Extend Official Job Offer'}
+        maxWidth="640px"
+        actions={
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="secondary" onClick={() => setActiveOfferApp(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleSaveOffer}
+              loading={createOrUpdateOffer.isPending}
+            >
+              {activeOfferApp?.offer ? 'Update Offer Terms' : 'Extend Offer to Candidate'}
+            </Button>
+          </div>
+        }
+      >
+        {activeOfferApp && (
+          <form onSubmit={handleSaveOffer} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {activeOfferApp.offer && (
+              <div
+                style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  background:
+                    activeOfferApp.offer.status === 'ACCEPTED'
+                      ? 'rgba(5, 150, 105, 0.12)'
+                      : activeOfferApp.offer.status === 'DECLINED'
+                      ? 'rgba(239, 68, 68, 0.12)'
+                      : 'rgba(124, 58, 237, 0.12)',
+                  border: `1px solid ${
+                    activeOfferApp.offer.status === 'ACCEPTED'
+                      ? 'rgba(5, 150, 105, 0.3)'
+                      : activeOfferApp.offer.status === 'DECLINED'
+                      ? 'rgba(239, 68, 68, 0.3)'
+                      : 'rgba(124, 58, 237, 0.3)'
+                  }`,
+                  color:
+                    activeOfferApp.offer.status === 'ACCEPTED'
+                      ? '#10b981'
+                      : activeOfferApp.offer.status === 'DECLINED'
+                      ? '#f87171'
+                      : '#a78bfa',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <FiAward size={16} />
+                <span>
+                  Offer Status: <strong>{activeOfferApp.offer.status}</strong>
+                  {activeOfferApp.offer.responded_at && ` (Responded on ${formatDate(activeOfferApp.offer.responded_at)})`}
+                  {activeOfferApp.offer.decline_reason && ` — Note: "${activeOfferApp.offer.decline_reason}"`}
+                </span>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--color-border, rgba(255,255,255,0.08))' }}>
+              <Avatar name={activeOfferApp.seeker?.user_name || 'Applicant'} size={38} round />
+              <div>
+                <strong style={{ fontSize: '14.5px', color: 'var(--color-text-primary)' }}>
+                  {activeOfferApp.seeker?.user_name}
+                </strong>
+                <span style={{ display: 'block', fontSize: '12.5px', color: 'var(--color-text-secondary)' }}>
+                  {activeOfferApp.seeker?.user_email}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Position Title *
+                </label>
+                <input
+                  type="text"
+                  value={offerJobTitle}
+                  onChange={(e) => setOfferJobTitle(e.target.value)}
+                  placeholder="e.g. Senior Frontend Engineer"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Base Salary / Compensation *
+                </label>
+                <input
+                  type="text"
+                  value={offerBaseSalary}
+                  onChange={(e) => setOfferBaseSalary(e.target.value)}
+                  placeholder="e.g. $145,000 / year or $75 / hr"
+                  required
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Signing / Performance Bonus
+                </label>
+                <input
+                  type="text"
+                  value={offerBonus}
+                  onChange={(e) => setOfferBonus(e.target.value)}
+                  placeholder="e.g. $10,000 Sign-on bonus"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Equity / Stock Options
+                </label>
+                <input
+                  type="text"
+                  value={offerEquity}
+                  onChange={(e) => setOfferEquity(e.target.value)}
+                  placeholder="e.g. 0.25% ISO options / 4 yr vesting"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Anticipated Start Date
+                </label>
+                <input
+                  type="date"
+                  value={offerStartDate}
+                  onChange={(e) => setOfferStartDate(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                  Offer Expiration Date
+                </label>
+                <input
+                  type="date"
+                  value={offerExpirationDate}
+                  onChange={(e) => setOfferExpirationDate(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-secondary)' }}>
+                Benefits, Relocation & Special Terms
+              </label>
+              <textarea
+                rows={3}
+                value={offerTerms}
+                onChange={(e) => setOfferTerms(e.target.value)}
+                placeholder="e.g. Full medical & dental, 401(k) 4% match, $2,000 home office stipend, flexible PTO..."
+                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--color-border, #333)', background: 'var(--color-surface, #1e1e1e)', color: 'inherit', boxSizing: 'border-box', resize: 'vertical' }}
+              />
+            </div>
+
+            {offerSuccessMsg && (
+              <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', fontSize: '13px' }}>
+                {offerSuccessMsg}
+              </div>
+            )}
+            {offerErrorMsg && (
+              <div style={{ padding: '8px 12px', borderRadius: '6px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', fontSize: '13px' }}>
+                {offerErrorMsg}
+              </div>
+            )}
+          </form>
         )}
       </Modal>
     </div>

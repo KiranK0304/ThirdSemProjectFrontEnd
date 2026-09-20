@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   applyToJobApi, getSeekerApplicationsApi, getSeekerApplicationApi, 
   withdrawApplicationApi, getJobApplicantsApi, getEmployerApplicationsApi, 
-  updateApplicationStatusApi, getSeekerInterviewsApi
+  updateApplicationStatusApi, getSeekerInterviewsApi, createOrUpdateJobOfferApi, decideJobOfferApi
 } from '../../api/applications';
-import type { Application } from '../../api/types';
+import type { Application, JobOffer } from '../../api/types';
 
 export const useSeekerApplications = (enabled = true) => {
   return useQuery({
@@ -102,5 +102,41 @@ export const useSeekerInterviews = () => {
   return useQuery({
     queryKey: ['seeker', 'interviews'],
     queryFn: () => getSeekerInterviewsApi(),
+  });
+};
+
+export const useCreateOrUpdateOffer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      applicationId,
+      data,
+    }: {
+      applicationId: number;
+      data: Partial<JobOffer>;
+    }) => createOrUpdateJobOfferApi(applicationId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employer'] });
+      queryClient.invalidateQueries({ queryKey: ['seeker', 'applications'] });
+    },
+  });
+};
+
+export const useDecideOffer = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      applicationId,
+      decision,
+      decline_reason,
+    }: {
+      applicationId: number;
+      decision: 'ACCEPTED' | 'DECLINED';
+      decline_reason?: string;
+    }) => decideJobOfferApi(applicationId, { decision, decline_reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seeker', 'applications'] });
+      queryClient.invalidateQueries({ queryKey: ['employer'] });
+    },
   });
 };

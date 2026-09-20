@@ -161,6 +161,48 @@ export default function Applications() {
                   </div>
                 </div>
 
+                {app.offer && (
+                  <div
+                    style={{
+                      margin: '10px 0 6px',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      background:
+                        app.offer.status === 'ACCEPTED'
+                          ? 'rgba(5, 150, 105, 0.12)'
+                          : app.offer.status === 'DECLINED'
+                          ? 'rgba(239, 68, 68, 0.1)'
+                          : 'rgba(217, 119, 6, 0.12)',
+                      border: `1px solid ${
+                        app.offer.status === 'ACCEPTED'
+                          ? 'rgba(5, 150, 105, 0.3)'
+                          : app.offer.status === 'DECLINED'
+                          ? 'rgba(239, 68, 68, 0.25)'
+                          : 'rgba(217, 119, 6, 0.35)'
+                      }`,
+                      color:
+                        app.offer.status === 'ACCEPTED'
+                          ? '#10b981'
+                          : app.offer.status === 'DECLINED'
+                          ? '#f87171'
+                          : 'var(--color-accent, #d97706)',
+                      fontSize: '12.5px',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <span>
+                      {app.offer.status === 'PENDING'
+                        ? `🎉 Digital Employment Offer Received (${app.offer.base_salary}) — Click to Review & Decide`
+                        : app.offer.status === 'ACCEPTED'
+                        ? `✅ Offer Accepted (${app.offer.base_salary})`
+                        : `Offer Declined`}
+                    </span>
+                  </div>
+                )}
+
                 <div className={styles.cardBottom}>
                   <div className={styles.tags}>
                     {app.job?.employment_type && (

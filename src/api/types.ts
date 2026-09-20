@@ -189,6 +189,27 @@ export interface CandidateAnalysisSummary {
   concerns: string[]
 }
 
+export interface JobOffer {
+  id: number
+  application_id: number
+  job_title?: string
+  company_name?: string
+  company_logo?: string
+  seeker_name?: string
+  seeker_email?: string
+  base_salary: string
+  bonus?: string
+  equity?: string
+  start_date?: string
+  expiration_date?: string
+  additional_terms?: string
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN'
+  responded_at?: string | null
+  decline_reason?: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Application {
   id: number
   job: Job
@@ -197,6 +218,7 @@ export interface Application {
   cover_letter: string
   rejection_note?: string
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'OFFERED' | 'REJECTED' | 'WITHDRAWN'
+  offer?: JobOffer | null
   analysis?: CandidateAnalysisSummary | null
   created_at: string
   updated_at: string

@@ -1,5 +1,5 @@
 import { api } from './client';
-import { Application, Interview } from './types';
+import { Application, Interview, JobOffer } from './types';
 
 export const applyToJobApi = async (jobId: number, data: { cover_letter?: string; resume_id?: number }): Promise<Application> => {
   const response = await api.post<Application>(`/api/jobs/${jobId}/apply/`, data);
@@ -46,5 +46,29 @@ export const updateApplicationStatusApi = async (
 
 export const getSeekerInterviewsApi = async (): Promise<Interview[]> => {
   const response = await api.get<Interview[]>('/api/seeker/interviews/');
+  return response.data;
+};
+
+export const getJobOfferApi = async (applicationId: number): Promise<JobOffer> => {
+  const response = await api.get<JobOffer>(`/api/employer/applications/${applicationId}/offer/`);
+  return response.data;
+};
+
+export const createOrUpdateJobOfferApi = async (
+  applicationId: number,
+  data: Partial<JobOffer>,
+): Promise<JobOffer> => {
+  const response = await api.post<JobOffer>(`/api/employer/applications/${applicationId}/offer/`, data);
+  return response.data;
+};
+
+export const decideJobOfferApi = async (
+  applicationId: number,
+  data: { decision: 'ACCEPTED' | 'DECLINED'; decline_reason?: string },
+): Promise<JobOffer> => {
+  const response = await api.post<JobOffer>(
+    `/api/seeker/applications/${applicationId}/offer/decision/`,
+    data,
+  );
   return response.data;
 };
