@@ -70,10 +70,20 @@ export interface JobEmployer {
   description: string
 }
 
+export type WorkplaceType = 'ON_SITE' | 'HYBRID' | 'REMOTE';
+export type ExperienceLevel = 'ENTRY_LEVEL' | 'MID_LEVEL' | 'SENIOR' | 'LEAD' | 'EXECUTIVE';
+
 export interface Job {
   id: number
   title: string
   description: string
+  department?: string
+  workplace_type: WorkplaceType
+  experience_level: ExperienceLevel | string
+  skills: string[]
+  responsibilities?: string
+  requirements?: string
+  benefits?: string
   location: string
   employment_type: string
   salary_min: string | null

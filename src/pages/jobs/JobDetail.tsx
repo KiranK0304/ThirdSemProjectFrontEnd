@@ -8,7 +8,13 @@ import { useResumes, useUploadResume } from '@/hooks/queries/useResumeQueries'
 import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { extractApiError } from '@/api/utils'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
-import { formatEmploymentType, formatStatus, getApplicationStatusVariant } from '@/utils/format'
+import {
+  formatEmploymentType,
+  formatStatus,
+  getApplicationStatusVariant,
+  formatWorkplaceType,
+  formatExperienceLevel,
+} from '@/utils/format'
 import { FiUploadCloud, FiFileText, FiAlertCircle, FiArrowLeft, FiMapPin, FiExternalLink, FiClock, FiMessageSquare } from 'react-icons/fi'
 import styles from './JobDetail.module.css'
 
@@ -224,6 +230,9 @@ export default function JobDetail() {
 
         <div className={styles.tagsRow}>
           {isJobApplied && <Tag variant="success">Applied</Tag>}
+          {job.department && <Tag variant="neutral">{job.department}</Tag>}
+          <Tag variant="neutral">{formatWorkplaceType(job.workplace_type)}</Tag>
+          {job.experience_level && <Tag variant="neutral">{formatExperienceLevel(job.experience_level)}</Tag>}
           <Tag variant="neutral">{formatEmploymentType(job.employment_type)}</Tag>
           {salary && <Tag variant="neutral">{salary}</Tag>}
           <span className={styles.postedDate}>
@@ -234,10 +243,44 @@ export default function JobDetail() {
       </Card>
 
       <Card className={styles.bodyCard}>
-        <h2 className={styles.sectionTitle}>Job Description & Requirements</h2>
-        <div className={styles.descriptionText}>
-          {job.description}
+        <div className={styles.contentSection}>
+          <h2 className={styles.sectionTitle}>Overview</h2>
+          <div className={styles.descriptionText}>{job.description}</div>
         </div>
+
+        {Array.isArray(job.skills) && job.skills.length > 0 && (
+          <div className={styles.contentSection}>
+            <h2 className={styles.sectionTitle}>Required Skills & Tech Stack</h2>
+            <div className={styles.skillsContainer}>
+              {job.skills.map((skill: string) => (
+                <span key={skill} className={styles.skillPill}>
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {job.responsibilities && (
+          <div className={styles.contentSection}>
+            <h2 className={styles.sectionTitle}>Key Responsibilities</h2>
+            <div className={styles.descriptionText}>{job.responsibilities}</div>
+          </div>
+        )}
+
+        {job.requirements && (
+          <div className={styles.contentSection}>
+            <h2 className={styles.sectionTitle}>Requirements & Qualifications</h2>
+            <div className={styles.descriptionText}>{job.requirements}</div>
+          </div>
+        )}
+
+        {job.benefits && (
+          <div className={styles.contentSection}>
+            <h2 className={styles.sectionTitle}>Benefits & Perks</h2>
+            <div className={styles.descriptionText}>{job.benefits}</div>
+          </div>
+        )}
 
         <div className={styles.footerRow}>
           {isJobApplied && existingApplication ? (

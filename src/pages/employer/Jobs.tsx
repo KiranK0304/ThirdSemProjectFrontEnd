@@ -7,7 +7,7 @@ import { useEmployerJobs, useDeleteJob } from '@/hooks/queries/useJobQueries';
 import { useEmployerApplications } from '@/hooks/queries/useApplicationQueries';
 import { Job } from '@/api/types';
 import { formatDate, formatSalary } from '@/utils/date';
-import { formatEmploymentType, getJobStatusVariant } from '@/utils/format';
+import { formatEmploymentType, formatWorkplaceType, getJobStatusVariant } from '@/utils/format';
 import { FiEye, FiEdit2, FiUsers, FiTrash2, FiPlus } from 'react-icons/fi';
 import styles from './Jobs.module.css';
 
@@ -171,7 +171,9 @@ export const Jobs: React.FC = () => {
                           {job.title}
                         </a>
                         <div className={styles.jobMetaText}>
-                          {job.location || 'Remote'} • {formatEmploymentType(job.employment_type)}
+                          {job.department ? `${job.department} • ` : ''}
+                          {formatWorkplaceType(job.workplace_type)} • {formatEmploymentType(job.employment_type)}
+                          {job.location ? ` • ${job.location}` : ''}
                         </div>
                       </td>
 

@@ -11,6 +11,30 @@ export function formatEmploymentType(type: string): string {
   return EMPLOYMENT_TYPE_LABELS[type] || type
 }
 
+const WORKPLACE_LABELS: Record<string, string> = {
+  REMOTE: 'Remote',
+  HYBRID: 'Hybrid',
+  ON_SITE: 'On-site',
+}
+
+export function formatWorkplaceType(type?: string): string {
+  if (!type) return 'Remote'
+  return WORKPLACE_LABELS[type] || type
+}
+
+const EXPERIENCE_LEVEL_LABELS: Record<string, string> = {
+  ENTRY_LEVEL: 'Entry-level (0-2 yrs)',
+  MID_LEVEL: 'Mid-level (2-5 yrs)',
+  SENIOR: 'Senior (5-8 yrs)',
+  LEAD: 'Lead / Staff (8+ yrs)',
+  EXECUTIVE: 'Executive',
+}
+
+export function formatExperienceLevel(level?: string): string {
+  if (!level) return ''
+  return EXPERIENCE_LEVEL_LABELS[level] || level
+}
+
 const STATUS_LABELS: Record<string, string> = {
   SUBMITTED: 'Submitted',
   UNDER_REVIEW: 'Under Review',

@@ -6,7 +6,7 @@ import { useJobs } from '@/hooks/queries/useJobQueries'
 import { useSeekerAppliedMap } from '@/hooks/queries/useApplicationQueries'
 import { SaveJobButton } from '@/components/jobs/SaveJobButton'
 import { formatRelativeTime, formatSalary } from '@/utils/date'
-import { formatEmploymentType } from '@/utils/format'
+import { formatEmploymentType, formatWorkplaceType } from '@/utils/format'
 import { FiSearch, FiMapPin, FiFilter, FiRotateCcw, FiArrowRight, FiBriefcase } from 'react-icons/fi'
 import styles from './JobList.module.css'
 
@@ -243,8 +243,19 @@ export default function JobList() {
                     <div className={styles.cardBottom}>
                       <div className={styles.tags}>
                         {isApplied(job.id) && <Tag variant="success">Applied</Tag>}
+                        {job.department && <Tag variant="neutral">{job.department}</Tag>}
+                        <Tag variant="neutral">{formatWorkplaceType(job.workplace_type)}</Tag>
                         <Tag variant="neutral">{formatEmploymentType(job.employment_type)}</Tag>
                         {salary && <Tag variant="neutral">{salary}</Tag>}
+                        {Array.isArray(job.skills) &&
+                          job.skills.slice(0, 3).map((s: string) => (
+                            <span key={s} className={styles.skillBadge}>
+                              {s}
+                            </span>
+                          ))}
+                        {Array.isArray(job.skills) && job.skills.length > 3 && (
+                          <span className={styles.skillMoreBadge}>+{job.skills.length - 3}</span>
+                        )}
                       </div>
                       <div className={styles.footerMeta}>
                         <span className={styles.postedDate}>
