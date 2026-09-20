@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Tag, Avatar, Modal, Button, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
+import { Tag, Avatar, Modal, ConfirmModal, Button, EmptyState, ErrorState, LoadingSpinner } from '@/components/ui';
 import { useEmployerJob } from '@/hooks/queries/useJobQueries';
 import { useEmployerJobApplicants, useUpdateApplicationStatus } from '@/hooks/queries/useApplicationQueries';
 import { formatDate } from '@/utils/date';
@@ -26,6 +26,16 @@ export const Applicants: React.FC = () => {
   const updateStatus = useUpdateApplicationStatus();
 
   const [activeLetterApp, setActiveLetterApp] = useState<Application | null>(null);
+  const [rejectModalState, setRejectModalState] = useState<{
+    open: boolean;
+    applicationId: number | null;
+    candidateName: string;
+  }>({
+    open: false,
+    applicationId: null,
+    candidateName: '',
+  });
+  const [rejectionNote, setRejectionNote] = useState<string>('');
 
   if (isLoadingJob || isLoadingApplicants) {
     return (
@@ -39,11 +49,36 @@ export const Applicants: React.FC = () => {
     return <ErrorState message="Failed to load applicants for this job." onRetry={refetch} />;
   }
 
-  const handleStatusChange = async (applicationId: number, newStatus: string) => {
+  const handleStatusChange = async (app: Application, newStatus: string) => {
+    if (newStatus === 'REJECTED') {
+      const candidateName = app.seeker?.user_name || app.seeker?.user_email || `Applicant #${app.id}`;
+      setRejectionNote('');
+      setRejectModalState({
+        open: true,
+        applicationId: app.id,
+        candidateName,
+      });
+      return;
+    }
+
     try {
-      await updateStatus.mutateAsync({ id: applicationId, status: newStatus });
+      await updateStatus.mutateAsync({ id: app.id, status: newStatus });
     } catch (err) {
       console.error('Failed to update status', err);
+    }
+  };
+
+  const handleConfirmRejection = async () => {
+    if (!rejectModalState.applicationId) return;
+    try {
+      await updateStatus.mutateAsync({
+        id: rejectModalState.applicationId,
+        status: 'REJECTED',
+        rejection_note: rejectionNote.trim(),
+      });
+      setRejectModalState({ open: false, applicationId: null, candidateName: '' });
+    } catch (err) {
+      console.error('Failed to reject candidate', err);
     }
   };
 
@@ -147,7 +182,7 @@ export const Applicants: React.FC = () => {
                         <select
                           className={styles.statusSelect}
                           value={app.status}
-                          onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                          onChange={(e) => handleStatusChange(app, e.target.value)}
                           disabled={isUpdating}
                           aria-label={`Update status for ${applicantName}`}
                         >
@@ -205,6 +240,49 @@ export const Applicants: React.FC = () => {
           </div>
         )}
       </Modal>
+
+      {/* Rejection with Note Confirmation Modal */}
+      <ConfirmModal
+        open={rejectModalState.open}
+        onClose={() => setRejectModalState((prev) => ({ ...prev, open: false }))}
+        onConfirm={handleConfirmRejection}
+        title="Reject Application"
+        description={
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <span>
+              Are you sure you want to reject the application for{' '}
+              <strong>{rejectModalState.candidateName}</strong>? A rejection email will be sent to the candidate.
+            </span>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px', opacity: 0.85 }}>
+                Optional Rejection Note / Feedback:
+              </label>
+              <textarea
+                value={rejectionNote}
+                onChange={(e) => setRejectionNote(e.target.value)}
+                placeholder="Enter feedback or reason for rejection (will be included in the rejection email)..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color, #444)',
+                  background: 'var(--bg-secondary, #1e1e1e)',
+                  color: 'inherit',
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+        }
+        confirmText="Reject & Send Email"
+        cancelText="Cancel"
+        variant="danger"
+        loading={updateStatus.isPending}
+      />
     </div>
   );
 };

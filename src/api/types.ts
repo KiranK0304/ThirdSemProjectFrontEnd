@@ -118,6 +118,7 @@ export interface Application {
   seeker: ApplicationSeeker
   resume: Resume | null
   cover_letter: string
+  rejection_note?: string
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'SHORTLISTED' | 'OFFERED' | 'REJECTED' | 'WITHDRAWN'
   analysis?: CandidateAnalysisSummary | null
   created_at: string

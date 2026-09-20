@@ -83,7 +83,15 @@ export const useEmployerApplications = () => {
 export const useUpdateApplicationStatus = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: number; status: string }) => updateApplicationStatusApi(id, status),
+    mutationFn: ({
+      id,
+      status,
+      rejection_note,
+    }: {
+      id: number;
+      status: string;
+      rejection_note?: string;
+    }) => updateApplicationStatusApi(id, status, rejection_note),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['employer'] });
     },

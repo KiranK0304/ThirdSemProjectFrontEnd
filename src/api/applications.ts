@@ -31,8 +31,16 @@ export const getEmployerApplicationsApi = async (): Promise<Application[]> => {
   return response.data;
 };
 
-export const updateApplicationStatusApi = async (id: number, status: string): Promise<Application> => {
-  const response = await api.patch<Application>(`/api/employer/applications/${id}/status/`, { status });
+export const updateApplicationStatusApi = async (
+  id: number,
+  status: string,
+  rejection_note?: string,
+): Promise<Application> => {
+  const payload: { status: string; rejection_note?: string } = { status };
+  if (rejection_note !== undefined) {
+    payload.rejection_note = rejection_note;
+  }
+  const response = await api.patch<Application>(`/api/employer/applications/${id}/status/`, payload);
   return response.data;
 };
 

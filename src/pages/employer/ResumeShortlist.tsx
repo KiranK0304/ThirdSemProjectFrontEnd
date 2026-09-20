@@ -22,6 +22,8 @@ export const ResumeShortlist: React.FC = () => {
   const [actionSuccessMessage, setActionSuccessMessage] = useState<string | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
 
+  const [rejectionNote, setRejectionNote] = useState<string>('');
+
   // Confirmation modal state for Shortlist / Reject
   const [confirmModalState, setConfirmModalState] = useState<{
     open: boolean;
@@ -72,6 +74,7 @@ export const ResumeShortlist: React.FC = () => {
     type: 'SHORTLIST' | 'REJECT', 
     candidateName?: string
   ) => {
+    setRejectionNote('');
     setConfirmModalState({
       open: true,
       type,
@@ -91,6 +94,7 @@ export const ResumeShortlist: React.FC = () => {
       await updateStatusMutation.mutateAsync({
         id: applicationId,
         status: newStatus,
+        rejection_note: type === 'REJECT' ? rejectionNote.trim() : undefined,
       });
       setConfirmModalState((prev) => ({ ...prev, open: false }));
       setActionSuccessMessage(
@@ -486,13 +490,38 @@ export const ResumeShortlist: React.FC = () => {
           confirmModalState.type === 'SHORTLIST' ? (
             <span>
               Are you sure you want to shortlist <strong>{confirmModalState.candidateName}</strong>?
-              They will be moved to the shortlisted stage in your hiring pipeline.
+              They will receive an email notification informing them they have been shortlisted.
             </span>
           ) : (
-            <span>
-              Are you sure you want to reject the application for{' '}
-              <strong>{confirmModalState.candidateName}</strong>?
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <span>
+                Are you sure you want to reject the application for{' '}
+                <strong>{confirmModalState.candidateName}</strong>? A rejection email will be sent to the candidate.
+              </span>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '6px', opacity: 0.85 }}>
+                  Optional Rejection Note / Feedback:
+                </label>
+                <textarea
+                  value={rejectionNote}
+                  onChange={(e) => setRejectionNote(e.target.value)}
+                  placeholder="Enter constructive feedback or reason (will be included in the rejection email)..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border, #444)',
+                    background: 'var(--bg-secondary, #1e1e1e)',
+                    color: 'inherit',
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+            </div>
           )
         }
         confirmText={

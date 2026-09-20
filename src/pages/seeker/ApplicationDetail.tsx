@@ -134,6 +134,16 @@ export default function ApplicationDetail() {
             </div>
           </Card>
 
+          {/* Rejection Note / Employer Feedback */}
+          {application.status === 'REJECTED' && application.rejection_note && (
+            <Card className={styles.card}>
+              <h2 className={styles.sectionHeading}>Feedback from Employer</h2>
+              <div className={styles.coverLetterBox}>
+                <p className={styles.coverLetterText}>{application.rejection_note}</p>
+              </div>
+            </Card>
+          )}
+
           {/* Cover Letter */}
           {application.cover_letter && (
             <Card className={styles.card}>
