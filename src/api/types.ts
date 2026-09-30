@@ -91,6 +91,7 @@ export interface User {
   account_type: 'EMPLOYER' | 'SEEKER' | null
   is_active: boolean
   is_staff: boolean
+  is_email_verified: boolean
   date_joined: string
   employer_profile: EmployerProfile | null
   seeker_profile: SeekerProfile | null
@@ -118,6 +119,16 @@ export interface RegisterRequest {
   password_confirm: string
   name: string
   account_type: 'EMPLOYER' | 'SEEKER'
+  // Employer details
+  company_name?: string
+  website?: string
+  company_size?: string
+  headquarters?: string
+  // Seeker details
+  headline?: string
+  phone?: string
+  location?: string
+  years_of_experience?: number | null
 }
 
 export interface JobEmployer {

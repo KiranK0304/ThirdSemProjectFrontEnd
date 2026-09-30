@@ -7,8 +7,9 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (data: LoginRequest) => Promise<void>
-  register: (data: RegisterRequest) => Promise<void>
+  register: (data: RegisterRequest) => Promise<{ email: string }>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -81,13 +82,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(me)
   }, [])
 
-  const register = useCallback(async (data: RegisterRequest) => {
+  const register = useCallback(async (data: RegisterRequest): Promise<{ email: string }> => {
+    // Registration now returns tokens + user data directly
+    // But user email is NOT verified yet, so we don't auto-login
     await registerApi(data)
-    // After registration, auto-login
-    const loginResp = await loginApi({ email: data.email, password: data.password })
-    setTokens(loginResp.access, loginResp.refresh)
-    const me = await getMeApi()
-    setUser(me)
+    return { email: data.email }
   }, [])
 
   const logout = useCallback(async () => {
@@ -104,8 +103,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await getMeApi()
+      setUser(me)
+    } catch {
+      // Ignore
+    }
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )

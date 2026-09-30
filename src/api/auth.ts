@@ -37,3 +37,13 @@ export const updateProfileApi = async (data: Record<string, any>): Promise<User>
   const response = await api.patch<User>('/api/me/', data);
   return response.data;
 };
+
+export const verifyEmailApi = async (token: string): Promise<{ detail: string }> => {
+  const response = await api.post<{ detail: string }>('/api/auth/verify-email/', { token });
+  return response.data;
+};
+
+export const resendVerificationApi = async (email?: string): Promise<{ detail: string }> => {
+  const response = await api.post<{ detail: string }>('/api/auth/resend-verification/', email ? { email } : {});
+  return response.data;
+};
