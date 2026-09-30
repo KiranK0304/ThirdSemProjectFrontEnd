@@ -97,7 +97,7 @@ export const Jobs: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (error && !isPending) {
     return <ErrorState message="Failed to load your job postings." onRetry={refetch} />;
   }
 
@@ -105,7 +105,7 @@ export const Jobs: React.FC = () => {
     <div className={styles.container}>
       {isPending && (
         <div className={styles.pendingNotice}>
-          Your employer account is pending verification. You'll be able to publish active jobs once an admin approves your profile.
+          🔒 <strong>Verification Pending:</strong> Your employer account is currently awaiting admin verification. You have no jobs posted, and you need admin approval before you can post or publish any jobs.
         </div>
       )}
 
@@ -120,18 +120,30 @@ export const Jobs: React.FC = () => {
           variant="primary"
           onClick={handleOpenCreateModal}
           disabled={isPending}
+          title={isPending ? "Admin approval required to post jobs" : "Post a Job"}
         >
-          <FiPlus style={{ marginRight: '6px' }} /> Post a Job
+          <FiPlus style={{ marginRight: '6px' }} />
+          {isPending ? 'Pending Admin Approval' : 'Post a Job'}
         </Button>
       </div>
 
       {!jobs || jobs.length === 0 ? (
         <EmptyState
           title="No job postings yet"
-          description="Create your first job posting to start attracting top talent."
+          description={
+            isPending
+              ? "You currently have no jobs posted. Admin approval is required before you can create and publish job listings."
+              : "Create your first job posting to start attracting top talent."
+          }
           action={
-            <Button variant="primary" onClick={handleOpenCreateModal} disabled={isPending}>
-              <FiPlus style={{ marginRight: '6px' }} /> Post a Job
+            <Button
+              variant="primary"
+              onClick={handleOpenCreateModal}
+              disabled={isPending}
+              title={isPending ? "Admin approval required to post jobs" : "Post a Job"}
+            >
+              <FiPlus style={{ marginRight: '6px' }} />
+              {isPending ? 'Pending Admin Approval' : 'Post a Job'}
             </Button>
           }
         />
