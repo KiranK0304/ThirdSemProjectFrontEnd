@@ -23,6 +23,7 @@ import ResumeShortlist from '@/pages/employer/ResumeShortlist'
 import AdminDashboard from '@/pages/admin/AdminDashboard'
 import Messages from '@/pages/messages/Messages'
 import CompanyDetail from '@/pages/companies/CompanyDetail'
+import VerifyEmail from '@/pages/VerifyEmail'
 
 function EditJobRedirect() {
   const { id } = useParams<{ id: string }>();
@@ -45,6 +46,9 @@ function App() {
       <Routes>
         {/* Public standalone Landing page */}
         <Route path="/" element={<Landing />} />
+
+        {/* Email verification — accessible to everyone */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Guest-only routes (login/register with seamless 3D card flip) */}
       <Route element={<GuestOnly><GuestLayout /></GuestOnly>}>
