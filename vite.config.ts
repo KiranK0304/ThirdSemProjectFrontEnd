@@ -26,6 +26,11 @@ export default defineConfig({
       '/admin': {
         target: backendTarget,
         changeOrigin: true,
+        bypass(req) {
+          if (req.url && (req.url === '/admin/dashboard' || req.url.startsWith('/admin/dashboard'))) {
+            return '/index.html';
+          }
+        },
       },
       '/static': {
         target: backendTarget,
