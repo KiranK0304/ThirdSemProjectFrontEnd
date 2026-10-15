@@ -67,6 +67,14 @@ function App() {
 
         {/* Admin routes */}
         <Route
+          path="/admin"
+          element={
+            <RequireAuth role="ADMIN">
+              <Navigate to="/admin/dashboard" replace />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/admin/dashboard"
           element={
             <RequireAuth role="ADMIN">
