@@ -7,6 +7,8 @@ export interface AdminEmployer {
   user_name: string
   company_name: string
   website: string
+  company_size?: string
+  headquarters?: string
   description: string
   verification_status: 'PENDING' | 'APPROVED' | 'REJECTED'
   created_at: string

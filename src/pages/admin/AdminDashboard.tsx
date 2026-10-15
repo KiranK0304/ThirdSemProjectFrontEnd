@@ -69,7 +69,9 @@ export default function AdminDashboard() {
     return employers.filter(emp => 
       (emp.company_name && emp.company_name.toLowerCase().includes(query)) ||
       (emp.user_email && emp.user_email.toLowerCase().includes(query)) ||
-      (emp.website && emp.website.toLowerCase().includes(query))
+      (emp.website && emp.website.toLowerCase().includes(query)) ||
+      (emp.headquarters && emp.headquarters.toLowerCase().includes(query)) ||
+      (emp.company_size && emp.company_size.toLowerCase().includes(query))
     );
   }, [employers, employerSearch]);
 
@@ -368,6 +370,13 @@ export default function AdminDashboard() {
                                   {emp.company_name || 'Unnamed Company'}
                                 </div>
                                 <div className={styles.companyEmail}>{emp.user_email}</div>
+                                {(emp.headquarters || emp.company_size) && (
+                                  <div className={styles.companySubMeta}>
+                                    {emp.headquarters && <span>📍 {emp.headquarters}</span>}
+                                    {emp.headquarters && emp.company_size && <span>•</span>}
+                                    {emp.company_size && <span>👥 {emp.company_size}</span>}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -708,6 +717,16 @@ export default function AdminDashboard() {
                 ) : (
                   <span className={styles.mutedText}>Not provided</span>
                 )}
+              </div>
+
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Headquarters:</span>
+                <span>{selectedEmployer.headquarters || 'Not specified'}</span>
+              </div>
+
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Company Size:</span>
+                <span>{selectedEmployer.company_size || 'Not specified'}</span>
               </div>
 
               <div className={styles.detailRow}>

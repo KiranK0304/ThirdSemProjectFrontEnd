@@ -429,6 +429,15 @@
   color: var(--color-text-secondary);
 }
 
+.companySubMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
 .websiteLink {
   display: inline-flex;
   align-items: center;
