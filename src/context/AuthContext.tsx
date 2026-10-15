@@ -6,7 +6,7 @@ import { loginApi, registerApi, logoutApi, getMeApi, refreshTokenApi } from '@/a
 interface AuthContextType {
   user: User | null
   isLoading: boolean
-  login: (data: LoginRequest) => Promise<void>
+  login: (data: LoginRequest) => Promise<User>
   register: (data: RegisterRequest) => Promise<{ email: string }>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
@@ -75,11 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const login = useCallback(async (data: LoginRequest) => {
+  const login = useCallback(async (data: LoginRequest): Promise<User> => {
     const response = await loginApi(data)
     setTokens(response.access, response.refresh)
     const me = await getMeApi()
     setUser(me)
+    return me
   }, [])
 
   const register = useCallback(async (data: RegisterRequest): Promise<{ email: string }> => {

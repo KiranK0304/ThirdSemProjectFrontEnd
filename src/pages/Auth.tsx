@@ -99,8 +99,17 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
     setIsLoginSubmitting(true)
 
     try {
-      await login({ email: loginEmail, password: loginPassword })
-      navigate('/', { replace: true })
+      const loggedInUser = await login({ email: loginEmail, password: loginPassword })
+      const from = (location.state as any)?.from?.pathname
+      if (from) {
+        navigate(from, { replace: true })
+      } else if (loggedInUser?.is_staff) {
+        navigate('/admin/dashboard', { replace: true })
+      } else if (loggedInUser?.account_type === 'EMPLOYER') {
+        navigate('/employer/dashboard', { replace: true })
+      } else {
+        navigate('/seeker/dashboard', { replace: true })
+      }
     } catch (err: any) {
       const errorMsg = extractApiError(err)
       // Check if the error is about email verification
