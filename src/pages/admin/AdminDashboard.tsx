@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   FiShield, FiSearch, FiExternalLink, FiUsers, FiBriefcase, 
@@ -20,6 +20,9 @@ type JobStatusFilter = '' | 'OPEN' | 'DRAFT' | 'CLOSED' | 'ARCHIVED';
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('employers');
   
+  // Feedback alert state
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   // Employer state
   const [employerStatusFilter, setEmployerStatusFilter] = useState<EmployerStatusFilter>('');
   const [employerSearch, setEmployerSearch] = useState('');
@@ -83,10 +86,20 @@ export default function AdminDashboard() {
       const matchesSearch = !jobSearch.trim() || 
         job.title.toLowerCase().includes(query) ||
         (job.employer?.company_name && job.employer.company_name.toLowerCase().includes(query)) ||
+        (job.department && job.department.toLowerCase().includes(query)) ||
+        (job.employment_type && job.employment_type.toLowerCase().includes(query)) ||
         (job.location && job.location.toLowerCase().includes(query));
       return matchesStatus && matchesSearch;
     });
   }, [jobs, jobStatusFilter, jobSearch]);
+
+  // Auto-dismiss feedback message after 5 seconds
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
 
   const handleRefresh = () => {
     refetchEmployers();
@@ -97,10 +110,20 @@ export default function AdminDashboard() {
     approveMutation.mutate(emp.id, {
       onSuccess: () => {
         setConfirmAction(null);
+        setFeedback({
+          type: 'success',
+          message: `Successfully verified and approved "${emp.company_name || emp.user_email}". They can now post jobs.`,
+        });
         if (selectedEmployer?.id === emp.id) {
           setSelectedEmployer(prev => prev ? { ...prev, verification_status: 'APPROVED' } : null);
         }
-      }
+      },
+      onError: (err: any) => {
+        setFeedback({
+          type: 'error',
+          message: err?.response?.data?.detail || 'Failed to approve employer. Please try again.',
+        });
+      },
     });
   };
 
@@ -108,10 +131,20 @@ export default function AdminDashboard() {
     rejectMutation.mutate(emp.id, {
       onSuccess: () => {
         setConfirmAction(null);
+        setFeedback({
+          type: 'success',
+          message: `Rejected verification for "${emp.company_name || emp.user_email}".`,
+        });
         if (selectedEmployer?.id === emp.id) {
           setSelectedEmployer(prev => prev ? { ...prev, verification_status: 'REJECTED' } : null);
         }
-      }
+      },
+      onError: (err: any) => {
+        setFeedback({
+          type: 'error',
+          message: err?.response?.data?.detail || 'Failed to reject employer. Please try again.',
+        });
+      },
     });
   };
 
@@ -154,6 +187,16 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className={styles.headerActions}>
+          <a
+            href="http://localhost:8000/admin/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.djangoAdminBtn}
+            title="Open Django Admin portal"
+          >
+            <FiExternalLink size={13} />
+            <span>Django Admin</span>
+          </a>
           <Button 
             variant="secondary" 
             size="sm" 
@@ -166,6 +209,17 @@ export default function AdminDashboard() {
           </Button>
         </div>
       </section>
+
+      {/* Action Feedback Banner */}
+      {feedback && (
+        <div className={`${styles.feedbackBanner} ${feedback.type === 'success' ? styles.feedbackSuccess : styles.feedbackError}`}>
+          {feedback.type === 'success' ? <FiCheckCircle size={18} /> : <FiAlertCircle size={18} />}
+          <span className={styles.feedbackMessage}>{feedback.message}</span>
+          <button className={styles.feedbackClose} onClick={() => setFeedback(null)} aria-label="Close notification">
+            <FiX size={14} />
+          </button>
+        </div>
+      )}
 
       {/* KPI Overview Cards */}
       <section className={styles.kpiGrid}>
