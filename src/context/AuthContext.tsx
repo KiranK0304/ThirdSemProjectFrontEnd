@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const register = useCallback(async (data: RegisterRequest): Promise<{ email: string; emailSent: boolean }> => {
-    // No session is created until the new account has verified its email.
+    // Registration leaves the user signed out; email verification is optional for login.
     const res = await registerApi(data)
     return { email: data.email, emailSent: res.email_verification_sent }
   }, [])

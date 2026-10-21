@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { extractApiError, extractFieldErrors } from '@/api/utils'
-import { resendVerificationApi } from '@/api/auth'
 import {
   FiUser,
   FiBriefcase,
@@ -38,10 +37,8 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
   const [loginPassword, setLoginPassword] = useState('')
   const [showLoginPassword, setShowLoginPassword] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [loginNotice, setLoginNotice] = useState<string | null>(null)
   const [isLoginSubmitting, setIsLoginSubmitting] = useState(false)
-  const [showVerifyHint, setShowVerifyHint] = useState(false)
-  const [resendingFromLogin, setResendingFromLogin] = useState(false)
-  const [resendLoginMsg, setResendLoginMsg] = useState<string | null>(null)
 
   // ── Register State ──
   const [regName, setRegName] = useState('')
@@ -68,26 +65,16 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
   const [regFieldErrors, setRegFieldErrors] = useState<Record<string, string>>({})
   const [isRegSubmitting, setIsRegSubmitting] = useState(false)
 
-  // ── Verification Pending State ──
-  const [verificationPending, setVerificationPending] = useState(false)
-  const [pendingEmail, setPendingEmail] = useState('')
-  const [verificationEmailFailed, setVerificationEmailFailed] = useState(false)
-  const [resending, setResending] = useState(false)
-  const [resendMsg, setResendMsg] = useState<string | null>(null)
-
   // Navigation handlers
   const flipToRegister = () => {
     setLoginError(null)
-    setShowVerifyHint(false)
-    setResendLoginMsg(null)
+    setLoginNotice(null)
     navigate('/register')
   }
 
   const flipToLogin = () => {
     setRegGeneralError(null)
     setRegFieldErrors({})
-    setVerificationPending(false)
-    setResendMsg(null)
     navigate('/login')
   }
 
@@ -95,8 +82,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoginError(null)
-    setShowVerifyHint(false)
-    setResendLoginMsg(null)
+    setLoginNotice(null)
     setIsLoginSubmitting(true)
 
     try {
@@ -113,33 +99,9 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
       }
     } catch (err: any) {
       const errorMsg = extractApiError(err)
-      // Check if the error is about email verification
-      if (errorMsg && errorMsg.toLowerCase().includes('verify your email')) {
-        setShowVerifyHint(true)
-        setLoginError(null)
-      } else {
-        setLoginError(errorMsg || 'Failed to sign in. Please check your credentials.')
-      }
+      setLoginError(errorMsg || 'Failed to sign in. Please check your credentials.')
     } finally {
       setIsLoginSubmitting(false)
-    }
-  }
-
-  // Resend verification from login page
-  const handleResendFromLogin = async () => {
-    if (!loginEmail) {
-      setResendLoginMsg('Please enter your email address above.')
-      return
-    }
-    setResendingFromLogin(true)
-    setResendLoginMsg(null)
-    try {
-      const res = await resendVerificationApi(loginEmail)
-      setResendLoginMsg(res.detail)
-    } catch (err) {
-      setResendLoginMsg(extractApiError(err) || 'Failed to resend. Please try again.')
-    } finally {
-      setResendingFromLogin(false)
     }
   }
 
@@ -176,10 +138,13 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
               years_of_experience: yearsExp ? Number(yearsExp) : null,
             }),
       })
-      // Show verification pending screen
-      setPendingEmail(regEmail)
-      setVerificationEmailFailed(!emailSent)
-      setVerificationPending(true)
+      setLoginEmail(regEmail)
+      setLoginNotice(
+        `Account created. Sign in with your email and password; email verification is not required.${
+          emailSent ? ' An optional verification link was also sent.' : ''
+        }`,
+      )
+      navigate('/login', { replace: true })
     } catch (err: any) {
       const fieldErrs = extractFieldErrors(err)
       if (Object.keys(fieldErrs).length > 0) {
@@ -189,21 +154,6 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
       }
     } finally {
       setIsRegSubmitting(false)
-    }
-  }
-
-  // Resend verification email
-  const handleResendVerification = async () => {
-    setResending(true)
-    setResendMsg(null)
-    try {
-      const res = await resendVerificationApi(pendingEmail)
-      setResendMsg(res.detail)
-      setVerificationEmailFailed(false)
-    } catch (err) {
-      setResendMsg(extractApiError(err) || 'Failed to resend verification email. Please try again.')
-    } finally {
-      setResending(false)
     }
   }
 
@@ -240,8 +190,6 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
                   onChange={(e) => {
                     setLoginEmail(e.target.value)
                     setLoginError(null)
-                    setShowVerifyHint(false)
-                    setResendLoginMsg(null)
                   }}
                   tabIndex={isFlipped ? -1 : 0}
                 />
@@ -285,24 +233,10 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
               </div>
             )}
 
-            {showVerifyHint && (
-              <div className={styles.verifyBanner} role="alert">
-                <FiMail size={16} style={{ flexShrink: 0, color: '#D97706' }} />
-                <div>
-                  <span>Please verify your email address before logging in. Check your inbox for the verification link.</span>
-                  <button
-                    type="button"
-                    className={styles.resendLink}
-                    onClick={handleResendFromLogin}
-                    disabled={resendingFromLogin}
-                    tabIndex={isFlipped ? -1 : 0}
-                  >
-                    {resendingFromLogin ? 'Sending...' : 'Resend verification email'}
-                  </button>
-                  {resendLoginMsg && (
-                    <span className={styles.resendMsg}>{resendLoginMsg}</span>
-                  )}
-                </div>
+            {loginNotice && (
+              <div className={styles.verifyBanner} role="status">
+                <FiCheckCircle size={16} style={{ flexShrink: 0, color: '#16A34A' }} />
+                <span>{loginNotice}</span>
               </div>
             )}
 
@@ -338,52 +272,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
           inert={!isFlipped ? true : undefined}
           aria-hidden={!isFlipped}
         >
-          {verificationPending ? (
-            /* ── Verification Pending Screen ── */
-            <div className={styles.verificationPending}>
-              <div className={styles.verifyIconWrap}>
-                <FiMail size={40} />
-              </div>
-              <h2 className={styles.verifyTitle}>Check your email</h2>
-              {verificationEmailFailed ? (
-                <p className={styles.verifyText}>
-                  Your account was created, but we couldn't send the verification email to{' '}
-                  <strong>{pendingEmail}</strong> just now. Please use the button below to try again.
-                </p>
-              ) : (
-                <p className={styles.verifyText}>
-                  We've sent a verification link to <strong>{pendingEmail}</strong>.
-                  Please click the link to verify your account.
-                </p>
-              )}
-              <p className={styles.verifySubtext}>
-                The link will expire in 24 hours.
-              </p>
-              <button
-                type="button"
-                className={styles.resendBtn}
-                onClick={handleResendVerification}
-                disabled={resending}
-                tabIndex={!isFlipped ? -1 : 0}
-              >
-                {resending ? 'Sending...' : 'Resend verification email'}
-              </button>
-              {resendMsg && (
-                <p className={styles.resendMsg}>{resendMsg}</p>
-              )}
-              <button
-                type="button"
-                className={styles.flipLink}
-                onClick={flipToLogin}
-                style={{ marginTop: '16px' }}
-                tabIndex={!isFlipped ? -1 : 0}
-              >
-                Go to Sign In →
-              </button>
-            </div>
-          ) : (
-            /* ── Normal Registration Form ── */
-            <>
+          <>
               <div className={styles.header}>
                 <h1 className={styles.title}>
                   Create <span className={styles.accent}>Account</span>
@@ -715,8 +604,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
                   Sign in →
                 </button>
               </div>
-            </>
-          )}
+          </>
         </div>
       </div>
       <Outlet />
