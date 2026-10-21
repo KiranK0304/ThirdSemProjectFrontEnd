@@ -99,7 +99,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
     setIsLoginSubmitting(true)
 
     try {
-      const loggedInUser = await login({ email: loginEmail, password: loginPassword })
+      const loggedInUser = await login({ email: loginEmail.trim(), password: loginPassword })
       const from = (location.state as any)?.from?.pathname
       if (from) {
         navigate(from, { replace: true })
@@ -111,9 +111,10 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
         navigate('/seeker/dashboard', { replace: true })
       }
     } catch (err: any) {
-      const errorMsg = extractApiError(err)
+      const rawError = extractApiError(err)
+      const errorMsg = typeof rawError === 'string' ? rawError : String(rawError || '')
       // Check if the error is about email verification
-      if (errorMsg && errorMsg.toLowerCase().includes('verify your email')) {
+      if (errorMsg.toLowerCase().includes('verify your email')) {
         setShowVerifyHint(true)
         setLoginError(null)
       } else {
@@ -155,7 +156,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
 
     setIsRegSubmitting(true)
     try {
-      await register({
+      const regRes = await register({
         name: regName,
         email: regEmail,
         password: regPassword,
@@ -175,6 +176,18 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
               years_of_experience: yearsExp ? Number(yearsExp) : null,
             }),
       })
+
+      if (regRes.autoLoggedIn) {
+        if (regRes.user?.is_staff) {
+          navigate('/admin/dashboard', { replace: true })
+        } else if (regRes.user?.account_type === 'EMPLOYER') {
+          navigate('/employer/dashboard', { replace: true })
+        } else {
+          navigate('/seeker/dashboard', { replace: true })
+        }
+        return
+      }
+
       // Show verification pending screen
       setPendingEmail(regEmail)
       setVerificationPending(true)

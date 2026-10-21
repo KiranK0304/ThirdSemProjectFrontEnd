@@ -3,11 +3,17 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '@/api/c
 import type { User, LoginRequest, RegisterRequest } from '@/api/types'
 import { loginApi, registerApi, logoutApi, getMeApi, refreshTokenApi } from '@/api/auth'
 
+export interface RegisterResult {
+  email: string
+  user?: User
+  autoLoggedIn?: boolean
+}
+
 interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (data: LoginRequest) => Promise<User>
-  register: (data: RegisterRequest) => Promise<{ email: string }>
+  register: (data: RegisterRequest) => Promise<RegisterResult>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -78,16 +84,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (data: LoginRequest): Promise<User> => {
     const response = await loginApi(data)
     setTokens(response.access, response.refresh)
-    const me = await getMeApi()
-    setUser(me)
-    return me
+    try {
+      const me = await getMeApi()
+      setUser(me)
+      return me
+    } catch (profileError) {
+      if (response.user) {
+        const basicUser: User = {
+          id: response.user.id,
+          email: response.user.email,
+          name: response.user.name,
+          account_type: response.user.account_type,
+          is_active: true,
+          is_staff: Boolean((response.user as any).is_staff),
+          is_email_verified: Boolean((response.user as any).is_email_verified),
+          date_joined: new Date().toISOString(),
+          employer_profile: null,
+          seeker_profile: null,
+        }
+        setUser(basicUser)
+        return basicUser
+      }
+      throw profileError
+    }
   }, [])
 
-  const register = useCallback(async (data: RegisterRequest): Promise<{ email: string }> => {
-    // Registration now returns tokens + user data directly
-    // But user email is NOT verified yet, so we don't auto-login
-    await registerApi(data)
-    return { email: data.email }
+  const register = useCallback(async (data: RegisterRequest): Promise<RegisterResult> => {
+    const response = await registerApi(data)
+    if (response.tokens?.access && response.user?.is_email_verified) {
+      setTokens(response.tokens.access, response.tokens.refresh)
+      try {
+        const me = await getMeApi()
+        setUser(me)
+        return { email: data.email, user: me, autoLoggedIn: true }
+      } catch {
+        setUser(response.user)
+        return { email: data.email, user: response.user, autoLoggedIn: true }
+      }
+    }
+    return { email: data.email, autoLoggedIn: false }
   }, [])
 
   const logout = useCallback(async () => {

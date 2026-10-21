@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { api } from './client';
-import { LoginRequest, LoginResponse, RegisterRequest, User } from './types';
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, User } from './types';
 
 export interface RefreshResponse {
   access: string;
@@ -12,8 +12,8 @@ export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
   return response.data;
 };
 
-export const registerApi = async (data: RegisterRequest): Promise<void> => {
-  const response = await api.post('/api/auth/register/', data);
+export const registerApi = async (data: RegisterRequest): Promise<RegisterResponse> => {
+  const response = await api.post<RegisterResponse>('/api/auth/register/', data);
   return response.data;
 };
 

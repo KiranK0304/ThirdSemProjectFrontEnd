@@ -379,7 +379,8 @@
 /* Guest Layout — Framed Studio Canvas */
 .guestLayout {
   min-height: 100vh;
-  background-color: #0B0B0A;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
   position: relative;
   overflow-x: hidden;
   display: flex;
@@ -387,6 +388,7 @@
   justify-content: space-between;
   padding: 24px 36px;
   background-image: radial-gradient(circle at 50% 35%, rgba(217, 119, 6, 0.07) 0%, transparent 60%);
+  transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .corner {

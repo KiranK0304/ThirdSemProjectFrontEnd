@@ -131,6 +131,15 @@ export interface RegisterRequest {
   years_of_experience?: number | null
 }
 
+export interface RegisterResponse {
+  user: User
+  tokens: {
+    access: string
+    refresh: string
+  }
+  email_verification_sent: boolean
+}
+
 export interface JobEmployer {
   id: number
   company_name: string
