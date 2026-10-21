@@ -255,7 +255,7 @@ export default function AdminDashboard() {
         </div>
         <div className={styles.headerActions}>
           <a
-            href="http://localhost:8000/admin/"
+            href={import.meta.env.VITE_DJANGO_ADMIN_URL || 'http://localhost:8000/admin/'}
             target="_blank"
             rel="noopener noreferrer"
             className={styles.djangoAdminBtn}

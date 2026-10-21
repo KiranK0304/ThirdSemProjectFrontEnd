@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   login: (data: LoginRequest) => Promise<User>
-  register: (data: RegisterRequest) => Promise<{ email: string }>
+  register: (data: RegisterRequest) => Promise<{ email: string; emailSent: boolean }>
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
@@ -83,11 +83,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return me
   }, [])
 
-  const register = useCallback(async (data: RegisterRequest): Promise<{ email: string }> => {
-    // Registration now returns tokens + user data directly
-    // But user email is NOT verified yet, so we don't auto-login
-    await registerApi(data)
-    return { email: data.email }
+  const register = useCallback(async (data: RegisterRequest): Promise<{ email: string; emailSent: boolean }> => {
+    // No session is created until the new account has verified its email.
+    const res = await registerApi(data)
+    return { email: data.email, emailSent: res.email_verification_sent }
   }, [])
 
   const logout = useCallback(async () => {

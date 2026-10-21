@@ -71,6 +71,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
   // ── Verification Pending State ──
   const [verificationPending, setVerificationPending] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
+  const [verificationEmailFailed, setVerificationEmailFailed] = useState(false)
   const [resending, setResending] = useState(false)
   const [resendMsg, setResendMsg] = useState<string | null>(null)
 
@@ -135,8 +136,8 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
     try {
       const res = await resendVerificationApi(loginEmail)
       setResendLoginMsg(res.detail)
-    } catch {
-      setResendLoginMsg('Failed to resend. Please try again.')
+    } catch (err) {
+      setResendLoginMsg(extractApiError(err) || 'Failed to resend. Please try again.')
     } finally {
       setResendingFromLogin(false)
     }
@@ -155,7 +156,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
 
     setIsRegSubmitting(true)
     try {
-      await register({
+      const { emailSent } = await register({
         name: regName,
         email: regEmail,
         password: regPassword,
@@ -177,6 +178,7 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
       })
       // Show verification pending screen
       setPendingEmail(regEmail)
+      setVerificationEmailFailed(!emailSent)
       setVerificationPending(true)
     } catch (err: any) {
       const fieldErrs = extractFieldErrors(err)
@@ -197,8 +199,9 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
     try {
       const res = await resendVerificationApi(pendingEmail)
       setResendMsg(res.detail)
-    } catch {
-      setResendMsg('Failed to resend verification email. Please try again.')
+      setVerificationEmailFailed(false)
+    } catch (err) {
+      setResendMsg(extractApiError(err) || 'Failed to resend verification email. Please try again.')
     } finally {
       setResending(false)
     }
@@ -342,10 +345,17 @@ export default function Auth({ defaultMode = 'login' }: AuthProps) {
                 <FiMail size={40} />
               </div>
               <h2 className={styles.verifyTitle}>Check your email</h2>
-              <p className={styles.verifyText}>
-                We've sent a verification link to <strong>{pendingEmail}</strong>.
-                Please click the link to verify your account.
-              </p>
+              {verificationEmailFailed ? (
+                <p className={styles.verifyText}>
+                  Your account was created, but we couldn't send the verification email to{' '}
+                  <strong>{pendingEmail}</strong> just now. Please use the button below to try again.
+                </p>
+              ) : (
+                <p className={styles.verifyText}>
+                  We've sent a verification link to <strong>{pendingEmail}</strong>.
+                  Please click the link to verify your account.
+                </p>
+              )}
               <p className={styles.verifySubtext}>
                 The link will expire in 24 hours.
               </p>

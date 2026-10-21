@@ -4,7 +4,8 @@ export const extractApiError = (error: unknown): string => {
   if (axios.isAxiosError(error) && error.response?.data) {
     const data = error.response.data;
     if (typeof data === 'string') return data;
-    if (data.detail) return data.detail;
+    // DRF sends `detail` as a list when it comes from a ValidationError
+    if (data.detail) return Array.isArray(data.detail) ? data.detail.join(' ') : String(data.detail);
     
     const errors = [];
     for (const key in data) {

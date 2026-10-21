@@ -12,8 +12,12 @@ export const loginApi = async (data: LoginRequest): Promise<LoginResponse> => {
   return response.data;
 };
 
-export const registerApi = async (data: RegisterRequest): Promise<void> => {
-  const response = await api.post('/api/auth/register/', data);
+export interface RegisterResponse {
+  email_verification_sent: boolean;
+}
+
+export const registerApi = async (data: RegisterRequest): Promise<RegisterResponse> => {
+  const response = await api.post<RegisterResponse>('/api/auth/register/', data);
   return response.data;
 };
 
